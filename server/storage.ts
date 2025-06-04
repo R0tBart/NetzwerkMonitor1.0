@@ -53,11 +53,15 @@ export class MemStorage implements IStorage {
   private systemMetrics: Map<number, SystemMetric>;
   private securityEvents: Map<number, SecurityEvent>;
   private idsRules: Map<number, IdsRule>;
+  private passwordVaults: Map<number, PasswordVault>;
+  private passwordEntries: Map<number, PasswordEntry>;
   private currentDeviceId: number;
   private currentBandwidthMetricId: number;
   private currentSystemMetricId: number;
   private currentSecurityEventId: number;
   private currentIdsRuleId: number;
+  private currentPasswordVaultId: number;
+  private currentPasswordEntryId: number;
 
   constructor() {
     this.devices = new Map();
@@ -65,14 +69,53 @@ export class MemStorage implements IStorage {
     this.systemMetrics = new Map();
     this.securityEvents = new Map();
     this.idsRules = new Map();
+    this.passwordVaults = new Map();
+    this.passwordEntries = new Map();
     this.currentDeviceId = 1;
     this.currentBandwidthMetricId = 1;
     this.currentSystemMetricId = 1;
     this.currentSecurityEventId = 1;
     this.currentIdsRuleId = 1;
+    this.currentPasswordVaultId = 1;
+    this.currentPasswordEntryId = 1;
     
     // Initialize with sample data
     this.initializeSampleData();
+  }
+  async getPasswordVaults(): Promise<PasswordVault[]> {
+    // In-memory: just return all vaults (if implemented)
+    return Array.from(this.passwordVaults.values());
+  }
+
+  async getPasswordVault(id: number): Promise<PasswordVault | undefined> {
+    if (!this["passwordVaults"]) {
+      this["passwordVaults"] = new Map<number, PasswordVault>();
+    }
+    return this["passwordVaults"].get(id);
+  }
+  createPasswordVault(vault: InsertPasswordVault): Promise<PasswordVault> {
+    throw new Error("Method not implemented.");
+  }
+  updatePasswordVault(id: number, vault: Partial<InsertPasswordVault>): Promise<PasswordVault | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  deletePasswordVault(id: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  getPasswordEntries(vaultId?: number): Promise<PasswordEntry[]> {
+    throw new Error("Method not implemented.");
+  }
+  getPasswordEntry(id: number): Promise<PasswordEntry | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  createPasswordEntry(entry: InsertPasswordEntry): Promise<PasswordEntry> {
+    throw new Error("Method not implemented.");
+  }
+  updatePasswordEntry(id: number, entry: Partial<InsertPasswordEntry>): Promise<PasswordEntry | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  deletePasswordEntry(id: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
   }
 
   private initializeSampleData() {
@@ -123,9 +166,16 @@ export class MemStorage implements IStorage {
     sampleDevices.forEach(device => {
       const id = this.currentDeviceId++;
       const fullDevice: Device = {
-        ...device,
         id,
+        name: device.name,
+        type: device.type,
+        status: device.status ?? "",
+        ipAddress: device.ipAddress,
+        bandwidth: device.bandwidth ?? 0,
+        maxBandwidth: device.maxBandwidth ?? 0,
         lastActivity: new Date(),
+        model: device.model ?? null,
+        location: device.location ?? null,
       };
       this.devices.set(id, fullDevice);
     });
@@ -181,6 +231,7 @@ export class MemStorage implements IStorage {
       const id = this.currentIdsRuleId++;
       const fullRule: IdsRule = {
         ...rule,
+        enabled: rule.enabled === undefined ? false : rule.enabled,
         id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -232,8 +283,11 @@ export class MemStorage implements IStorage {
       const id = this.currentSecurityEventId++;
       const fullEvent: SecurityEvent = {
         ...event,
+        status: event.status ?? "",
         id,
         timestamp: new Date(Date.now() - Math.random() * 86400000), // Random time within last 24h
+        targetIp: event.targetIp ?? null,
+        deviceId: event.deviceId ?? null,
       };
       this.securityEvents.set(id, fullEvent);
     });
@@ -253,6 +307,11 @@ export class MemStorage implements IStorage {
       ...insertDevice,
       id,
       lastActivity: new Date(),
+      status: insertDevice.status ?? "",
+      bandwidth: insertDevice.bandwidth ?? 0,
+      maxBandwidth: insertDevice.maxBandwidth ?? 0,
+      model: insertDevice.model ?? null,
+      location: insertDevice.location ?? null,
     };
     this.devices.set(id, device);
     return device;
@@ -293,6 +352,7 @@ export class MemStorage implements IStorage {
       ...insertMetric,
       id,
       timestamp: new Date(),
+      deviceId: insertMetric.deviceId ?? null,
     };
     this.bandwidthMetrics.set(id, metric);
     return metric;
@@ -340,6 +400,9 @@ export class MemStorage implements IStorage {
       ...insertEvent,
       id,
       timestamp: new Date(),
+      status: insertEvent.status ?? "",
+      deviceId: insertEvent.deviceId ?? null,
+      targetIp: insertEvent.targetIp ?? null,
     };
     this.securityEvents.set(id, event);
     return event;
@@ -374,6 +437,7 @@ export class MemStorage implements IStorage {
     const id = this.currentIdsRuleId++;
     const rule: IdsRule = {
       ...insertRule,
+      enabled: insertRule.enabled === undefined ? false : insertRule.enabled,
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -623,15 +687,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBandwidthMetrics(deviceId?: number, limit: number = 50): Promise<BandwidthMetric[]> {
-    let query = db.select().from(bandwidthMetrics);
-    
     if (deviceId) {
-      query = query.where(eq(bandwidthMetrics.deviceId, deviceId));
+      return await db
+        .select()
+        .from(bandwidthMetrics)
+        .where(eq(bandwidthMetrics.deviceId, deviceId))
+        .orderBy(desc(bandwidthMetrics.timestamp))
+        .limit(limit);
+    } else {
+      return await db
+        .select()
+        .from(bandwidthMetrics)
+        .orderBy(desc(bandwidthMetrics.timestamp))
+        .limit(limit);
     }
-    
-    return await query
-      .orderBy(desc(bandwidthMetrics.timestamp))
-      .limit(limit);
   }
 
   async createBandwidthMetric(insertMetric: InsertBandwidthMetric): Promise<BandwidthMetric> {
@@ -774,13 +843,18 @@ export class DatabaseStorage implements IStorage {
 
   async getPasswordEntries(vaultId?: number): Promise<PasswordEntry[]> {
     await this.initializeData();
-    let query = db.select().from(passwordEntries);
-    
     if (vaultId) {
-      query = query.where(eq(passwordEntries.vaultId, vaultId));
+      return await db
+        .select()
+        .from(passwordEntries)
+        .where(eq(passwordEntries.vaultId, vaultId))
+        .orderBy(desc(passwordEntries.lastUsed));
+    } else {
+      return await db
+        .select()
+        .from(passwordEntries)
+        .orderBy(desc(passwordEntries.lastUsed));
     }
-    
-    return await query.orderBy(desc(passwordEntries.lastUsed));
   }
 
   async getPasswordEntry(id: number): Promise<PasswordEntry | undefined> {

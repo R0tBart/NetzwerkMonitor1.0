@@ -2,7 +2,7 @@ import { pgTable, text, serial, integer, boolean, timestamp, real } from "drizzl
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const devices = pgTable("devices", {
+export const devices = pgTable("Device", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(), // router, switch, access_point, firewall
@@ -15,7 +15,7 @@ export const devices = pgTable("devices", {
   location: text("location"),
 });
 
-export const bandwidthMetrics = pgTable("bandwidth_metrics", {
+export const bandwidthMetrics = pgTable("BandwidthMetric", {
   id: serial("id").primaryKey(),
   deviceId: integer("device_id").references(() => devices.id),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
@@ -23,7 +23,7 @@ export const bandwidthMetrics = pgTable("bandwidth_metrics", {
   outgoing: real("outgoing").notNull(), // GB/s
 });
 
-export const systemMetrics = pgTable("system_metrics", {
+export const systemMetrics = pgTable("SystemMetric", {
   id: serial("id").primaryKey(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   activeDevices: integer("active_devices").notNull(),
@@ -32,7 +32,7 @@ export const systemMetrics = pgTable("system_metrics", {
   uptime: real("uptime").notNull(), // percentage
 });
 
-export const securityEvents = pgTable("security_events", {
+export const securityEvents = pgTable("SecurityEvent", {
   id: serial("id").primaryKey(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   eventType: text("event_type").notNull(), // intrusion_attempt, malware_detected, unusual_traffic, port_scan, brute_force
@@ -44,7 +44,7 @@ export const securityEvents = pgTable("security_events", {
   deviceId: integer("device_id").references(() => devices.id),
 });
 
-export const idsRules = pgTable("ids_rules", {
+export const idsRules = pgTable("IdsRule", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
@@ -56,7 +56,7 @@ export const idsRules = pgTable("ids_rules", {
 });
 
 // Password Manager Tables
-export const passwordVaults = pgTable("password_vaults", {
+export const passwordVaults = pgTable("PasswordVault", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
@@ -64,7 +64,7 @@ export const passwordVaults = pgTable("password_vaults", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const passwordEntries = pgTable("password_entries", {
+export const passwordEntries = pgTable("PasswordEntrie", {
   id: serial("id").primaryKey(),
   vaultId: integer("vault_id").references(() => passwordVaults.id, { onDelete: "cascade" }).notNull(),
   title: text("title").notNull(),
