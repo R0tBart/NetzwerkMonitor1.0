@@ -1,17 +1,28 @@
 "use client"
 
+// Importiert React für die Komponentendefinition.
 import * as React from "react"
+// Importiert alle Komponenten von `@radix-ui/react-select` als `SelectPrimitive`.
 import * as SelectPrimitive from "@radix-ui/react-select"
+// Importiert die Icons `Check`, `ChevronDown` und `ChevronUp` von `lucide-react`.
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
+// Importiert die `cn`-Hilfsfunktion zum Zusammenführen von Klassennamen.
 import { cn } from "@/lib/utils"
 
+// Definiert die `Select`-Komponente als Alias für `SelectPrimitive.Root`.
 const Select = SelectPrimitive.Root
 
+// Definiert die `SelectGroup`-Komponente als Alias für `SelectPrimitive.Group`.
 const SelectGroup = SelectPrimitive.Group
 
+// Definiert die `SelectValue`-Komponente als Alias für `SelectPrimitive.Value`.
 const SelectValue = SelectPrimitive.Value
 
+// Definiert die `SelectTrigger`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Trigger für das Select-Feld.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kindelemente, die im Trigger gerendert werden sollen.
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
@@ -30,8 +41,12 @@ const SelectTrigger = React.forwardRef<
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
+// Setzt den Anzeigenamen für die `SelectTrigger`-Komponente.
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
+// Definiert die `SelectScrollUpButton`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert einen Scroll-Up-Button für das Select-Menü.
+// `className`: Zusätzliche CSS-Klassen.
 const SelectScrollUpButton = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
@@ -47,8 +62,12 @@ const SelectScrollUpButton = React.forwardRef<
     <ChevronUp className="h-4 w-4" />
   </SelectPrimitive.ScrollUpButton>
 ))
+// Setzt den Anzeigenamen für die `SelectScrollUpButton`-Komponente.
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
 
+// Definiert die `SelectScrollDownButton`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert einen Scroll-Down-Button für das Select-Menü.
+// `className`: Zusätzliche CSS-Klassen.
 const SelectScrollDownButton = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
@@ -64,9 +83,15 @@ const SelectScrollDownButton = React.forwardRef<
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ))
+// Setzt den Anzeigenamen für die `SelectScrollDownButton`-Komponente.
 SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName
 
+// Definiert die `SelectContent`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Inhalt des Select-Menüs.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kindelemente, die im Inhalt gerendert werden sollen.
+// `position`: Die Position des Inhalts (Standard: "popper").
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
@@ -97,8 +122,12 @@ const SelectContent = React.forwardRef<
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 ))
+// Setzt den Anzeigenamen für die `SelectContent`-Komponente.
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
+// Definiert die `SelectLabel`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert ein Label für ein Select-Element.
+// `className`: Zusätzliche CSS-Klassen.
 const SelectLabel = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
@@ -109,8 +138,13 @@ const SelectLabel = React.forwardRef<
     {...props}
   />
 ))
+// Setzt den Anzeigenamen für die `SelectLabel`-Komponente.
 SelectLabel.displayName = SelectPrimitive.Label.displayName
 
+// Definiert die `SelectItem`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert ein einzelnes Element im Select-Menü.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kindelemente, die im Element gerendert werden sollen.
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
@@ -132,8 +166,12 @@ const SelectItem = React.forwardRef<
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ))
+// Setzt den Anzeigenamen für die `SelectItem`-Komponente.
 SelectItem.displayName = SelectPrimitive.Item.displayName
 
+// Definiert die `SelectSeparator`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert einen Separator im Select-Menü.
+// `className`: Zusätzliche CSS-Klassen.
 const SelectSeparator = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
@@ -144,8 +182,11 @@ const SelectSeparator = React.forwardRef<
     {...props}
   />
 ))
+// Setzt den Anzeigenamen für die `SelectSeparator`-Komponente.
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+// Exportiert die `Select`, `SelectGroup`, `SelectValue`, `SelectTrigger`, `SelectContent`,
+// `SelectLabel`, `SelectItem`, `SelectSeparator`, `SelectScrollUpButton` und `SelectScrollDownButton` Komponenten.
 export {
   Select,
   SelectGroup,

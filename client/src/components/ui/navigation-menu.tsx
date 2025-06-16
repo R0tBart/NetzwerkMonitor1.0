@@ -1,10 +1,19 @@
+// Importiert React für die Komponentendefinition.
 import * as React from "react"
+// Importiert alle Komponenten von `@radix-ui/react-navigation-menu` als `NavigationMenuPrimitive`.
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
+// Importiert `cva` von `class-variance-authority` für die Variantenverwaltung von CSS-Klassen.
 import { cva } from "class-variance-authority"
+// Importiert das `ChevronDown`-Icon von `lucide-react`.
 import { ChevronDown } from "lucide-react"
 
+// Importiert die `cn`-Hilfsfunktion zum Zusammenführen von Klassennamen.
 import { cn } from "@/lib/utils"
 
+// Definiert die `NavigationMenu`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert das Haupt-Navigationsmenü.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kind-Elemente, die gerendert werden sollen.
 const NavigationMenu = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
@@ -21,8 +30,12 @@ const NavigationMenu = React.forwardRef<
     <NavigationMenuViewport />
   </NavigationMenuPrimitive.Root>
 ))
+// Setzt den Anzeigenamen für die `NavigationMenu`-Komponente.
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName
 
+// Definiert die `NavigationMenuList`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert eine Liste von Navigationselementen.
+// `className`: Zusätzliche CSS-Klassen.
 const NavigationMenuList = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
@@ -36,14 +49,21 @@ const NavigationMenuList = React.forwardRef<
     {...props}
   />
 ))
+// Setzt den Anzeigenamen für die `NavigationMenuList`-Komponente.
 NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName
 
+// Definiert die `NavigationMenuItem`-Komponente als Alias für `NavigationMenuPrimitive.Item`.
 const NavigationMenuItem = NavigationMenuPrimitive.Item
 
+// Definiert die Stilvarianten für den Navigation Menu Trigger mit `cva`.
 const navigationMenuTriggerStyle = cva(
   "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-accent-foreground data-[state=open]:bg-accent/50 data-[state=open]:hover:bg-accent data-[state=open]:focus:bg-accent"
 )
 
+// Definiert die `NavigationMenuTrigger`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Trigger für ein Navigationselement.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kind-Elemente, die gerendert werden sollen.
 const NavigationMenuTrigger = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
@@ -60,8 +80,12 @@ const NavigationMenuTrigger = React.forwardRef<
     />
   </NavigationMenuPrimitive.Trigger>
 ))
+// Setzt den Anzeigenamen für die `NavigationMenuTrigger`-Komponente.
 NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName
 
+// Definiert die `NavigationMenuContent`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Inhalt eines Navigationselements.
+// `className`: Zusätzliche CSS-Klassen.
 const NavigationMenuContent = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
@@ -75,10 +99,15 @@ const NavigationMenuContent = React.forwardRef<
     {...props}
   />
 ))
+// Setzt den Anzeigenamen für die `NavigationMenuContent`-Komponente.
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName
 
+// Definiert die `NavigationMenuLink`-Komponente als Alias für `NavigationMenuPrimitive.Link`.
 const NavigationMenuLink = NavigationMenuPrimitive.Link
 
+// Definiert die `NavigationMenuViewport`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Viewport für das Navigationsmenü.
+// `className`: Zusätzliche CSS-Klassen.
 const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
@@ -94,9 +123,13 @@ const NavigationMenuViewport = React.forwardRef<
     />
   </div>
 ))
+// Setzt den Anzeigenamen für die `NavigationMenuViewport`-Komponente.
 NavigationMenuViewport.displayName =
   NavigationMenuPrimitive.Viewport.displayName
 
+// Definiert die `NavigationMenuIndicator`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Indikator für das aktive Navigationselement.
+// `className`: Zusätzliche CSS-Klassen.
 const NavigationMenuIndicator = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Indicator>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>
@@ -112,9 +145,11 @@ const NavigationMenuIndicator = React.forwardRef<
     <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md" />
   </NavigationMenuPrimitive.Indicator>
 ))
+// Setzt den Anzeigenamen für die `NavigationMenuIndicator`-Komponente.
 NavigationMenuIndicator.displayName =
   NavigationMenuPrimitive.Indicator.displayName
 
+// Exportiert alle Navigation Menu-bezogenen Komponenten und Stile zur Verwendung in anderen Teilen der Anwendung.
 export {
   navigationMenuTriggerStyle,
   NavigationMenu,
