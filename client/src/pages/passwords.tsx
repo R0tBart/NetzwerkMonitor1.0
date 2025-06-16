@@ -1,5 +1,7 @@
 import { useState } from "react";
+// Importiert Hooks von React Query für Datenabfragen und -mutationen.
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// Importiert UI-Komponenten von Shadcn/ui.
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,59 +11,74 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+// Importiert Icons von lucide-react.
 import { Plus, Shield, Key, Edit, Trash2, Eye, EyeOff, Copy, Star, ExternalLink, Lock } from "lucide-react";
+// Importiert Hooks und Resolver für die Formularverwaltung mit React Hook Form und Zod.
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+// Importiert Hilfsfunktionen für API-Anfragen und Toast-Benachrichtigungen.
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+// Importiert Typdefinitionen für Passwort-Tresore und -Einträge.
 import type { PasswordVault, PasswordEntry, InsertPasswordVault, InsertPasswordEntry } from "@shared/schema";
+// Importiert die Sidebar-Komponente für das Layout.
 import Sidebar from "@/components/layout/sidebar";
 
+// Zod-Schema für die Validierung von Passworteinträgen.
 const passwordEntrySchema = z.object({
-  vaultId: z.number(),
-  title: z.string().min(1, "Titel ist erforderlich"),
-  username: z.string().optional(),
-  email: z.string().email("Ungültige E-Mail-Adresse").optional().or(z.literal("")),
-  encryptedPassword: z.string().min(1, "Passwort ist erforderlich"),
-  website: z.string().url("Ungültige URL").optional().or(z.literal("")),
-  notes: z.string().optional(),
-  category: z.string().optional(),
-  isFavorite: z.boolean().default(false),
+  vaultId: z.number(), // ID des Tresors, zu dem der Eintrag gehört.
+  title: z.string().min(1, "Titel ist erforderlich"), // Titel des Eintrags.
+  username: z.string().optional(), // Optionaler Benutzername.
+  email: z.string().email("Ungültige E-Mail-Adresse").optional().or(z.literal("")), // Optionale E-Mail-Adresse mit Validierung.
+  encryptedPassword: z.string().min(1, "Passwort ist erforderlich"), // Verschlüsseltes Passwort.
+  website: z.string().url("Ungültige URL").optional().or(z.literal("")), // Optionale Website-URL mit Validierung.
+  notes: z.string().optional(), // Optionale Notizen.
+  category: z.string().optional(), // Optionale Kategorie.
+  isFavorite: z.boolean().default(false), // Kennzeichnet, ob der Eintrag ein Favorit ist.
 });
 
+// Zod-Schema für die Validierung von Passwort-Tresoren.
 const vaultSchema = z.object({
-  name: z.string().min(1, "Name ist erforderlich"),
-  description: z.string().optional(),
+  name: z.string().min(1, "Name ist erforderlich"), // Name des Tresors.
+  description: z.string().optional(), // Optionale Beschreibung des Tresors.
 });
 
+// Typableitungen für die Formular-Daten.
 type FormData = z.infer<typeof passwordEntrySchema>;
 type VaultFormData = z.infer<typeof vaultSchema>;
 
+/**
+ * Die `Passwords`-Komponente verwaltet Passwort-Tresore und -Einträge.
+ * Sie ermöglicht das Erstellen, Bearbeiten, Löschen und Anzeigen von Passwörtern.
+ */
 export default function Passwords() {
-  const [selectedVault, setSelectedVault] = useState<number | null>(null);
-  const [showPassword, setShowPassword] = useState<{ [key: number]: boolean }>({});
-  const [entryDialogOpen, setEntryDialogOpen] = useState(false);
-  const [vaultDialogOpen, setVaultDialogOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  // Zustandsvariablen für die UI-Logik.
+  const [selectedVault, setSelectedVault] = useState<number | null>(null); // Der aktuell ausgewählte Tresor.
+  const [showPassword, setShowPassword] = useState<{ [key: number]: boolean }>({}); // Sichtbarkeit von Passwörtern.
+  const [entryDialogOpen, setEntryDialogOpen] = useState(false); // Zustand des Dialogs für Passworteinträge.
+  const [vaultDialogOpen, setVaultDialogOpen] = useState(false); // Zustand des Dialogs für Tresore.
+  const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null); // Der aktuell bearbeitete Passworteintrag.
+  const { toast } = useToast(); // Hook für Toast-Benachrichtigungen.
+  const queryClient = useQueryClient(); // React Query Client für Cache-Invalidierung.
 
-  // Queries
+  // React Query Abfragen (Queries).
+  // Abfrage zum Abrufen aller Passwort-Tresore.
   const { data: vaults = [], isLoading: vaultsLoading } = useQuery<PasswordVault[]>({
     queryKey: ["/api/password-vaults"],
   });
 
+  // Abfrage zum Abrufen von Passworteinträgen basierend auf dem ausgewählten Tresor.
   const { data: entries = [], isLoading: entriesLoading } = useQuery<PasswordEntry[]>({
     queryKey: ["/api/password-entries", selectedVault],
-    enabled: !!selectedVault,
+    enabled: !!selectedVault, // Diese Abfrage wird nur ausgeführt, wenn ein Tresor ausgewählt ist.
   });
 
-  // Forms
+  // React Hook Form-Initialisierung für Passworteinträge.
   const entryForm = useForm<FormData>({
-    resolver: zodResolver(passwordEntrySchema),
+    resolver: zodResolver(passwordEntrySchema), // Verwendet Zod zur Validierung des Formulars.
     defaultValues: {
-      vaultId: selectedVault ?? undefined,
+      vaultId: selectedVault ?? undefined, // Setzt die Tresor-ID basierend auf der Auswahl.
       title: "",
       username: "",
       email: "",
@@ -70,121 +87,162 @@ export default function Passwords() {
       notes: "",
       category: "",
       isFavorite: false,
-    }, 
-  });
-
-  const deleteVaultMutation = useMutation({
-    mutationFn: (id: number) => apiRequest("DELETE", `/api/password-vaults/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/password-vaults"] });
-      toast({ title: "Tresor gelöscht", description: "Der Passwort-Tresor wurde erfolgreich gelöscht." });
-      setSelectedVault(null); // Clear selected vault after deletion
     },
   });
 
+  // Mutation zum Löschen eines Passwort-Tresors.
+  const deleteVaultMutation = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/password-vaults/${id}`), // API-Anfrage zum Löschen.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/password-vaults"] }); // Invalidiert den Cache für Tresore.
+      toast({ title: "Tresor gelöscht", description: "Der Passwort-Tresor wurde erfolgreich gelöscht." }); // Erfolgsmeldung.
+      setSelectedVault(null); // Setzt den ausgewählten Tresor zurück.
+    },
+  });
+
+  // React Hook Form-Initialisierung für Tresore.
   const vaultForm = useForm<VaultFormData>({
-    resolver: zodResolver(vaultSchema),
+    resolver: zodResolver(vaultSchema), // Verwendet Zod zur Validierung des Formulars.
     defaultValues: {
       name: "",
       description: "",
     },
   });
 
-  // Mutations
+  // React Query Mutationen.
+  // Mutation zum Erstellen eines neuen Tresors.
   const createVaultMutation = useMutation({
-    mutationFn: (data: InsertPasswordVault) => apiRequest("POST", "/api/password-vaults", data),
+    mutationFn: (data: InsertPasswordVault) => apiRequest("POST", "/api/password-vaults", data), // API-Anfrage zum Erstellen.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/password-vaults"] });
-      setVaultDialogOpen(false);
-      vaultForm.reset();
-      toast({ title: "Tresor erstellt", description: "Der Passwort-Tresor wurde erfolgreich erstellt." });
+      queryClient.invalidateQueries({ queryKey: ["/api/password-vaults"] }); // Invalidiert den Cache für Tresore.
+      setVaultDialogOpen(false); // Schließt den Dialog.
+      vaultForm.reset(); // Setzt das Formular zurück.
+      toast({ title: "Tresor erstellt", description: "Der Passwort-Tresor wurde erfolgreich erstellt." }); // Erfolgsmeldung.
     },
   });
 
+  // Mutation zum Erstellen eines neuen Passworteintrags.
   const createEntryMutation = useMutation({
-    mutationFn: (data: InsertPasswordEntry) => apiRequest("POST", "/api/password-entries", data),
+    mutationFn: (data: InsertPasswordEntry) => apiRequest("POST", "/api/password-entries", data), // API-Anfrage zum Erstellen.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] });
-      setEntryDialogOpen(false);
-      entryForm.reset();
-      setEditingEntry(null);
-      toast({ title: "Passwort gespeichert", description: "Das Passwort wurde erfolgreich hinzugefügt." });
+      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] }); // Invalidiert den Cache für Einträge.
+      setEntryDialogOpen(false); // Schließt den Dialog.
+      entryForm.reset(); // Setzt das Formular zurück.
+      setEditingEntry(null); // Setzt den Bearbeitungsmodus zurück.
+      toast({ title: "Passwort gespeichert", description: "Das Passwort wurde erfolgreich hinzugefügt." }); // Erfolgsmeldung.
     },
   });
 
+  // Mutation zum Aktualisieren eines Passworteintrags.
   const updateEntryMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<InsertPasswordEntry> }) =>
-      apiRequest("PUT", `/api/password-entries/${id}`, data),
+      apiRequest("PUT", `/api/password-entries/${id}`, data), // API-Anfrage zum Aktualisieren.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] });
-      setEntryDialogOpen(false);
-      entryForm.reset();
-      setEditingEntry(null);
-      toast({ title: "Passwort aktualisiert", description: "Das Passwort wurde erfolgreich aktualisiert." });
+      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] }); // Invalidiert den Cache für Einträge.
+      setEntryDialogOpen(false); // Schließt den Dialog.
+      entryForm.reset(); // Setzt das Formular zurück.
+      setEditingEntry(null); // Setzt den Bearbeitungsmodus zurück.
+      toast({ title: "Passwort aktualisiert", description: "Das Passwort wurde erfolgreich aktualisiert." }); // Erfolgsmeldung.
     },
   });
 
+  // Mutation zum Löschen eines Passworteintrags.
   const deleteEntryMutation = useMutation({
-    mutationFn: (id: number) => apiRequest("DELETE", `/api/password-entries/${id}`),
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/password-entries/${id}`), // API-Anfrage zum Löschen.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] });
-      toast({ title: "Passwort gelöscht", description: "Das Passwort wurde erfolgreich gelöscht." });
+      queryClient.invalidateQueries({ queryKey: ["/api/password-entries", selectedVault] }); // Invalidiert den Cache für Einträge.
+      toast({ title: "Passwort gelöscht", description: "Das Passwort wurde erfolgreich gelöscht." }); // Erfolgsmeldung.
     },
   });
 
+  /**
+   * Behandelt das Absenden des Formulars für Passworteinträge.
+   * Unterscheidet zwischen Erstellen und Aktualisieren eines Eintrags.
+   * @param data Die Formulardaten des Passworteintrags.
+   */
   const onSubmitEntry = (data: FormData) => {
-    // vaultId is already part of data from the form
     if (editingEntry) {
-      updateEntryMutation.mutate({ id: editingEntry.id, data });
+      updateEntryMutation.mutate({ id: editingEntry.id, data }); // Aktualisiert einen bestehenden Eintrag.
     } else {
-      createEntryMutation.mutate(data);
+      createEntryMutation.mutate(data); // Erstellt einen neuen Eintrag.
     }
   };
 
+  /**
+   * Behandelt das Absenden des Formulars für Tresore.
+   * Erstellt einen neuen Tresor.
+   * @param data Die Formulardaten des Tresors.
+   */
   const onSubmitVault = (data: VaultFormData) => {
-    createVaultMutation.mutate(data);
+    createVaultMutation.mutate(data); // Erstellt einen neuen Tresor.
   };
 
+  /**
+   * Behandelt das Löschen eines Tresors.
+   * Fragt zur Bestätigung nach und löscht dann den Tresor und alle zugehörigen Einträge.
+   * @param vaultId Die ID des zu löschenden Tresors.
+   */
   const handleDeleteVault = (vaultId: number) => {
     if (window.confirm("Sind Sie sicher, dass Sie diesen Tresor löschen möchten? Alle darin enthaltenen Passwörter werden ebenfalls gelöscht.")) {
-      deleteVaultMutation.mutate(vaultId);
+      deleteVaultMutation.mutate(vaultId); // Führt die Löschmutation aus.
     }
   };
 
+  /**
+   * Schaltet die Sichtbarkeit eines Passworts um.
+   * @param entryId Die ID des Eintrags, dessen Passwortsichtbarkeit umgeschaltet werden soll.
+   */
   const togglePasswordVisibility = (entryId: number) => {
-    setShowPassword(prev => ({ ...prev, [entryId]: !prev[entryId] }));
+    setShowPassword(prev => ({ ...prev, [entryId]: !prev[entryId] })); // Aktualisiert den Zustand der Sichtbarkeit.
   };
 
+  /**
+   * Generiert ein zufälliges, starkes Passwort.
+   * @param length Die gewünschte Länge des Passworts (Standard: 16).
+   * @returns Ein zufällig generiertes Passwort.
+   */
   const generatePassword = (length: number = 16) => {
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"; // Zeichensatz für das Passwort.
     let password = "";
     for (let i = 0; i < length; i++) {
-      password += charset.charAt(Math.floor(Math.random() * charset.length));
+      password += charset.charAt(Math.floor(Math.random() * charset.length)); // Wählt zufällige Zeichen aus.
     }
     return password;
   };
 
+  /**
+   * Behandelt das Generieren eines Passworts und setzt es in das Formularfeld ein.
+   */
   const handleGeneratePassword = () => {
-    const newPassword = generatePassword(16);
-    entryForm.setValue("encryptedPassword", newPassword);
-    toast({ title: "Passwort generiert", description: `Ein starkes Passwort wurde generiert: ${newPassword}` });
+    const newPassword = generatePassword(16); // Generiert ein neues Passwort.
+    entryForm.setValue("encryptedPassword", newPassword); // Setzt das generierte Passwort in das Formularfeld.
+    toast({ title: "Passwort generiert", description: `Ein starkes Passwort wurde generiert: ${newPassword}` }); // Benachrichtigung über generiertes Passwort.
   };
 
+  /**
+   * Kopiert Text in die Zwischenablage.
+   * @param text Der zu kopierende Text.
+   * @param type Der Typ des kopierten Inhalts (z.B. "Passwort", "Benutzername").
+   */
   const copyToClipboard = async (text: string, type: string) => {
     try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: "Kopiert", description: `${type} wurde in die Zwischenablage kopiert.` });
+      await navigator.clipboard.writeText(text); // Versucht, den Text in die Zwischenablage zu kopieren.
+      toast({ title: "Kopiert", description: `${type} wurde in die Zwischenablage kopiert.` }); // Erfolgsmeldung.
     } catch (error) {
       toast({ 
         title: "Fehler", 
         description: "Konnte nicht in die Zwischenablage kopieren.", 
         variant: "destructive" 
-      });
+      }); // Fehlermeldung.
     }
   };
 
+  /**
+   * Bereitet das Formular für die Bearbeitung eines bestehenden Passworteintrags vor.
+   * @param entry Der zu bearbeitende Passworteintrag.
+   */
   const handleEditEntry = (entry: PasswordEntry) => {
-    setEditingEntry(entry);
+    setEditingEntry(entry); // Setzt den Eintrag, der bearbeitet werden soll.
     entryForm.reset({
       vaultId: entry.vaultId,
       title: entry.title,
@@ -195,21 +253,22 @@ export default function Passwords() {
       notes: entry.notes || "",
       category: entry.category || "",
       isFavorite: entry.isFavorite,
-    });
-    setEntryDialogOpen(true);
+    }); // Setzt die Formularwerte auf die des Eintrags.
+    setEntryDialogOpen(true); // Öffnet den Dialog für den Passworteintrag.
   };
 
-  // Set default vault when vaults load
+  // Setzt den Standard-Tresor, wenn Tresore geladen werden und noch keiner ausgewählt ist.
   if (vaults && vaults.length > 0 && !selectedVault) {
     setSelectedVault(vaults[0].id);
   }
 
   return (
+    // Hauptcontainer der Seite mit Sidebar und Hauptinhaltsbereich.
     <div className="flex h-screen bg-slate-50 dark:bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-auto p-6 space-y-6">
-          {/* Header */}
+          {/* Header-Bereich mit Titel und Beschreibung. */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Passwort-Manager</h1>
@@ -217,7 +276,9 @@ export default function Passwords() {
                 Sichere Verwaltung Ihrer Netzwerk-Zugangsdaten und Passwörter
               </p>
             </div>
+            {/* Buttons zum Erstellen eines neuen Tresors und eines neuen Passworts. */}
             <div className="flex gap-2">
+              {/* Dialog zum Erstellen eines neuen Tresors. */}
               <Dialog open={vaultDialogOpen} onOpenChange={setVaultDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
@@ -232,6 +293,7 @@ export default function Passwords() {
                       Erstellen Sie einen neuen Tresor für Ihre Passwörter
                     </DialogDescription>
                   </DialogHeader>
+                  {/* Formular zum Erstellen eines Tresors. */}
                   <Form {...vaultForm}>
                     <form onSubmit={vaultForm.handleSubmit(onSubmitVault)} className="space-y-4">
                       <FormField
@@ -273,6 +335,7 @@ export default function Passwords() {
                 </DialogContent>
               </Dialog>
 
+              {/* Dialog zum Erstellen/Bearbeiten eines Passworteintrags. */}
               <Dialog open={entryDialogOpen} onOpenChange={setEntryDialogOpen}>
                 <DialogTrigger asChild>
                   <Button disabled={!selectedVault}>
@@ -289,9 +352,10 @@ export default function Passwords() {
                       Fügen Sie ein neues Passwort zu Ihrem Tresor hinzu
                     </DialogDescription>
                   </DialogHeader>
+                  {/* Formular für Passworteinträge. */}
                   <Form {...entryForm}>
                     <form onSubmit={entryForm.handleSubmit(onSubmitEntry)} className="space-y-4">
-                      {/* Hidden vaultId field */}
+                      {/* Verstecktes Feld für die vaultId. */}
                       <FormField
                         control={entryForm.control}
                         name="vaultId"
@@ -389,9 +453,9 @@ export default function Passwords() {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">Passwort anzeigen</FormLabel>
-                          <FormDescription>
+                          <CardDescription>
                             Zeigt das generierte Passwort im Eingabefeld an.
-                          </FormDescription>
+                          </CardDescription>
                         </div>
                         <FormControl>
                           <Switch
