@@ -14,8 +14,6 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Sicherheit", href: "/security", icon: Shield },
-  { name: "Passwörter", href: "/passwords", icon: Key },
   { name: "Geräte", href: "/devices", icon: Server },
   { name: "Analysen", href: "/analytics", icon: TrendingUp },
   { name: "Alerts", href: "/alerts", icon: Bell },

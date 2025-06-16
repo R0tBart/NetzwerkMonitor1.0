@@ -5,8 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Dashboard from "@/pages/dashboard";
-import Security from "@/pages/security";
-import Passwords from "@/pages/passwords";
 import Devices from "@/pages/devices";
 import Analyse from "@/pages/analytics";
 import Alerts from "@/pages/alerts";
@@ -22,8 +20,6 @@ function Router() {
       <Route path="/analytics" component={Analyse} />
       <Route path="/alerts" component={Alerts} />
       <Route path="/settings" component={Settings} />
-      <Route path="/security" component={Security} />
-      <Route path="/passwords" component={Passwords} />
       <Route component={NotFound} />
     </Switch>
   );
