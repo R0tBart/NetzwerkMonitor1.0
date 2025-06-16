@@ -3,33 +3,48 @@ import { db } from "../server/db";
 import { devices, bandwidthMetrics, systemMetrics, securityEvents, idsRules, passwordVaults, passwordEntries } from "../shared/schema";
 
 
+/**
+ * Leert alle Daten aus den relevanten Datenbanktabellen.
+ * Dies wird typischerweise für Testzwecke oder zur Vorbereitung der Datenbank verwendet.
+ */
 async function truncateTables() {
   console.log("Truncating tables...");
+  // Löscht alle Einträge aus der `devices`-Tabelle.
   await db.delete(devices);
+  // Löscht alle Einträge aus der `bandwidthMetrics`-Tabelle.
   await db.delete(bandwidthMetrics);
+  // Löscht alle Einträge aus der `systemMetrics`-Tabelle.
   await db.delete(systemMetrics);
+  // Löscht alle Einträge aus der `securityEvents`-Tabelle.
   await db.delete(securityEvents);
+  // Löscht alle Einträge aus der `idsRules`-Tabelle.
   await db.delete(idsRules);
+  // Löscht alle Einträge aus der `passwordVaults`-Tabelle.
   await db.delete(passwordVaults);
+  // Löscht alle Einträge aus der `passwordEntries`-Tabelle.
   await db.delete(passwordEntries);
   console.log("Tables truncated.");
 }
 
+// Hauptausführungsblock des Skripts.
 (async () => {
   try {
+    // Versucht, eine Verbindung zur Datenbank herzustellen und protokolliert den Erfolg.
     console.log('✅ Verbindung erfolgreich');
   } catch (error) {
+    // Fängt Fehler bei der Verbindung ab und protokolliert sie.
     console.error('❌ Fehler bei der Verbindung:', error);
   } finally {
-    // No pool.end() needed as we are using drizzle-orm with a direct db connection
+    // Da Drizzle ORM mit einer direkten DB-Verbindung verwendet wird, ist kein `pool.end()` erforderlich.
   }
 
+  // Leert alle Tabellen, bevor neue Daten eingefügt werden.
   await truncateTables();
 
-  // Insert sample data
+  // Fügt Beispieldaten ein.
   console.log("Inserting sample data...");
 
-  // Devices
+  // Fügt Beispieldaten für Geräte in die `devices`-Tabelle ein.
   const insertedDevices = await db.insert(devices).values([
     {
       name: "Router-1",
@@ -64,7 +79,7 @@ async function truncateTables() {
   ]).returning();
   console.log("Inserted devices:", insertedDevices);
 
-  // Bandwidth Metrics
+  // Fügt Beispieldaten für Bandbreitenmetriken in die `bandwidthMetrics`-Tabelle ein.
   if (insertedDevices.length > 0) {
     await db.insert(bandwidthMetrics).values([
       {
@@ -81,7 +96,7 @@ async function truncateTables() {
     console.log("Inserted bandwidth metrics.");
   }
 
-  // System Metrics
+  // Fügt Beispieldaten für Systemmetriken in die `systemMetrics`-Tabelle ein.
   await db.insert(systemMetrics).values([
     {
       activeDevices: 3,
@@ -92,7 +107,7 @@ async function truncateTables() {
   ]);
   console.log("Inserted system metrics.");
 
-  // Security Events
+  // Fügt Beispieldaten für Sicherheitsereignisse in die `securityEvents`-Tabelle ein.
   if (insertedDevices.length > 0) {
     await db.insert(securityEvents).values([
       {
@@ -117,7 +132,7 @@ async function truncateTables() {
     console.log("Inserted security events.");
   }
 
-  // IDS Rules
+  // Fügt Beispieldaten für IDS-Regeln (Intrusion Detection System) in die `idsRules`-Tabelle ein.
   await db.insert(idsRules).values([
     {
       name: "SQL Injection Attempt",
@@ -136,7 +151,7 @@ async function truncateTables() {
   ]);
   console.log("Inserted IDS rules.");
 
-  // Password Vaults
+  // Fügt Beispieldaten für Passwort-Safes in die `passwordVaults`-Tabelle ein.
   const insertedVaults = await db.insert(passwordVaults).values([
     {
       name: "Admin Passwords",
@@ -149,7 +164,7 @@ async function truncateTables() {
   ]).returning();
   console.log("Inserted password vaults:", insertedVaults);
 
-  // Password Entries
+  // Fügt Beispieldaten für Passworteinträge in die `passwordEntries`-Tabelle ein.
   if (insertedVaults.length > 0) {
     await db.insert(passwordEntries).values([
       {
@@ -178,6 +193,7 @@ async function truncateTables() {
     ]);
     console.log("Inserted password entries.");
   }
+  // Zeigt an, dass die Einfügung der Beispieldaten abgeschlossen ist.
   console.log("Sample data insertion complete.");
 
 })();
