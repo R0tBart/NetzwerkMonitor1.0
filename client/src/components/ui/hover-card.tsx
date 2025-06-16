@@ -1,14 +1,24 @@
 "use client"
 
+// Importiert React für die Komponentendefinition.
 import * as React from "react"
+// Importiert alle Komponenten von `@radix-ui/react-hover-card` als `HoverCardPrimitive`.
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
 
+// Importiert die `cn`-Hilfsfunktion zum Zusammenführen von Klassennamen.
 import { cn } from "@/lib/utils"
 
+// Definiert die `HoverCard`-Komponente als Alias für `HoverCardPrimitive.Root`.
 const HoverCard = HoverCardPrimitive.Root
 
+// Definiert die `HoverCardTrigger`-Komponente als Alias für `HoverCardPrimitive.Trigger`.
 const HoverCardTrigger = HoverCardPrimitive.Trigger
 
+// Definiert die `HoverCardContent`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert den Inhalt der Hover Card.
+// `className`: Zusätzliche CSS-Klassen.
+// `align`: Ausrichtung des Inhalts (Standard: "center").
+// `sideOffset`: Abstand zur Seite (Standard: 4).
 const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
@@ -24,6 +34,8 @@ const HoverCardContent = React.forwardRef<
     {...props}
   />
 ))
+// Setzt den Anzeigenamen für die `HoverCardContent`-Komponente.
 HoverCardContent.displayName = HoverCardPrimitive.Content.displayName
 
+// Exportiert die `HoverCard`, `HoverCardTrigger` und `HoverCardContent` Komponenten.
 export { HoverCard, HoverCardTrigger, HoverCardContent }

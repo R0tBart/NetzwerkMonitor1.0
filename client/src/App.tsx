@@ -12,8 +12,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 // Importiert die verschiedenen Seiten/Ansichten der Anwendung.
 import Dashboard from "@/pages/dashboard";
-import Security from "@/pages/security";
-import Passwords from "@/pages/passwords";
 import Devices from "@/pages/devices";
 import Analyse from "@/pages/analytics";
 import Alerts from "@/pages/alerts";
@@ -41,10 +39,6 @@ function Router() {
       <Route path="/alerts" component={Alerts} />
       {/* Route für die Einstellungen */}
       <Route path="/settings" component={Settings} />
-      {/* Route für die Sicherheitsfunktionen */}
-      <Route path="/security" component={Security} />
-      {/* Route für den Passwort-Tresor */}
-      <Route path="/passwords" component={Passwords} />
       {/* Fallback-Route für nicht gefundene Seiten (404) */}
       <Route component={NotFound} />
     </Switch>
