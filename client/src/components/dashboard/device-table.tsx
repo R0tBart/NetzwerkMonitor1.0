@@ -1,17 +1,33 @@
 import { useState } from "react";
+// Importiert UI-Komponenten von Shadcn/ui und React-Hooks.
+// `Card`, `CardContent`, `CardHeader`, `CardTitle` für die Strukturierung von Inhalten.
+// `Button` für interaktive Elemente.
+// `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue` für Dropdown-Auswahlen.
+// `Badge` für Statusanzeigen.
+// `Table`, `TableBody`, `TableCell`, `TableHead`, `TableHeader`, `TableRow` für die Darstellung von Tabellendaten.
+// `Progress` für Fortschrittsbalken.
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+// Importiert Icons von `lucide-react` für visuelle Darstellungen.
+// `Eye`, `Edit`, `Trash2`, `Plus`, `ArrowUpDown`, `Router`, `Network`, `Wifi`, `Shield` werden verwendet.
 import { Eye, Edit, Trash2, Plus, ArrowUpDown, Router, Network, Wifi, Shield } from "lucide-react";
+// Importiert Hooks von `@tanstack/react-query` für Datenverwaltung und Mutationen.
+// `useQuery` für das Abrufen von Daten, `useMutation` für das Senden von Datenänderungen, `useQueryClient` für die Cache-Verwaltung.
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// Importiert die benutzerdefinierte `apiRequest`-Funktion für API-Aufrufe.
 import { apiRequest } from "@/lib/queryClient";
+// Importiert den `useToast`-Hook für Benachrichtigungen.
 import { useToast } from "@/hooks/use-toast";
+// Importiert die `DeviceFormDialog`-Komponente für das Hinzufügen und Bearbeiten von Geräten.
 import DeviceFormDialog from "./device-form-dialog";
+// Importiert den `Device`-Typ aus dem gemeinsamen Schema.
 import type { Device } from "@shared/schema";
 
+// Definiert ein Objekt, das Gerätetypen Icons zuordnet.
 const deviceTypeIcons = {
   router: Router,
   switch: Network,
@@ -19,6 +35,7 @@ const deviceTypeIcons = {
   firewall: Shield,
 };
 
+// Definiert ein Objekt, das Gerätetypen spezifische Farbstile zuordnet.
 const deviceTypeColors = {
   router: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
   switch: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
@@ -26,6 +43,7 @@ const deviceTypeColors = {
   firewall: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
 };
 
+// Definiert ein Objekt, das Gerätestatus spezifische Farbstile zuordnet.
 const statusVariants = {
   online: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
   warning: "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200",
@@ -33,21 +51,30 @@ const statusVariants = {
   maintenance: "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200",
 };
 
+// Definiert die Hauptkomponente `DeviceTable`.
 export default function DeviceTable() {
+  // Zustandsvariablen für Filterung, Sortierung und Dialogverwaltung.
   const [filter, setFilter] = useState("all");
   const [sortField, setSortField] = useState<keyof Device>("id");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
 
+  // Initialisiert den `useToast`-Hook für Benachrichtigungen.
   const { toast } = useToast();
+  // Initialisiert den `useQueryClient`-Hook für die Interaktion mit dem React Query Cache.
   const queryClient = useQueryClient();
 
-  const { data: devices, isLoading } = useQuery<Device[]>({
+  // Verwendet `useQuery`, um Gerätedaten abzurufen.
+  // Die Daten werden alle 10 Sekunden aktualisiert (`refetchInterval`).
+  const { data: devices, isLoading } = useQuery<Device[]> ({
     queryKey: ["/api/devices"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 10000, // Alle 10 Sekunden aktualisieren
   });
 
+  // Definiert eine Mutation zum Löschen eines Geräts.
+  // Bei Erfolg wird der Cache invalidiert und eine Erfolgsmeldung angezeigt.
+  // Bei Fehler wird eine Fehlermeldung angezeigt.
   const deleteDevice = useMutation({
     mutationFn: (id: number) => apiRequest("DELETE", `/api/devices/${id}`),
     onSuccess: () => {
@@ -59,6 +86,8 @@ export default function DeviceTable() {
     },
   });
 
+  // Handler-Funktion für die Sortierung der Tabelle.
+  // Wechselt die Sortierrichtung, wenn auf dasselbe Feld geklickt wird, ansonsten wird aufsteigend sortiert.
   const handleSort = (field: keyof Device) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -68,6 +97,8 @@ export default function DeviceTable() {
     }
   };
 
+  // Filtert und sortiert die Gerätedaten basierend auf dem aktuellen Filter und der Sortierreihenfolge.
+  // Unterstützt Sortierung für String- und Number-Typen.
   const filteredAndSortedDevices = devices
     ?.filter(device => filter === "all" || device.type === filter)
     ?.sort((a, b) => {
@@ -87,6 +118,8 @@ export default function DeviceTable() {
       return 0;
     }) || [];
 
+  // Zeigt einen Ladezustand an, während die Daten abgerufen werden.
+  // Dies beinhaltet eine Skelett-UI für die Tabelle.
   if (isLoading) {
     return (
       <Card className="bg-white dark:bg-card shadow-sm border border-slate-200 dark:border-border">
@@ -104,6 +137,7 @@ export default function DeviceTable() {
     );
   }
 
+  // Rendert die Benutzeroberfläche der Gerätetabelle.
   return (
     <>
       <Card className="bg-white dark:bg-card shadow-sm border border-slate-200 dark:border-border">

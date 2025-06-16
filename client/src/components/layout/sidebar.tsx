@@ -1,52 +1,66 @@
-import { Link, useLocation } from "wouter";
+
+// Importiert Hilfsfunktionen für Klassennamen-Konditionalisierung.
 import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
-  Server, 
-  TrendingUp, 
-  Bell, 
-  Settings, 
+import { Link, useLocation } from "react-router-dom"; // Importiert Link und useLocation von react-router-dom
+// Importiert Icons von lucide-react für die Navigation.
+import {
+  LayoutDashboard, // Icon für Dashboard
+  Server,          // Icon für Server/Geräte
+  TrendingUp,      // Icon für Analysen
+  Bell,            // Icon für Alerts
+  Settings,        // Icon für Einstellungen
   Network,
   User,
-  Shield,
-  Key
 } from "lucide-react";
 
+
+// Definiert die Navigationspunkte der Sidebar.
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Sicherheit", href: "/security", icon: Shield },
-  { name: "Passwörter", href: "/passwords", icon: Key },
   { name: "Geräte", href: "/devices", icon: Server },
   { name: "Analysen", href: "/analytics", icon: TrendingUp },
   { name: "Alerts", href: "/alerts", icon: Bell },
   { name: "Einstellungen", href: "/settings", icon: Settings },
 ];
 
+/**
+ * `Sidebar`-Komponente rendert die Hauptnavigation der Anwendung.
+ * Sie zeigt Links zu verschiedenen Bereichen wie Dashboard, Sicherheit, Passwörter usw.
+ */
 export default function Sidebar() {
-  const [location] = useLocation();
+  // Ermittelt den aktuellen Pfad der URL.
+  const location = useLocation().pathname; // Ermittelt den aktuellen Pfad der URL.
 
   return (
-    <div className="w-64 bg-white dark:bg-sidebar shadow-lg border-r border-slate-200 dark:border-sidebar-border flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-slate-200 dark:border-sidebar-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Network className="text-white h-4 w-4" />
+    // Hauptcontainer der Sidebar mit Styling für Breite, Hintergrund, Schatten und Rahmen.
+    <div className="w-64 bg-white dark:bg-sidebar shadow-lg border-r border-slate-200 dark:border-sidebar-border flex flex-col"> {/* Sidebar-Container */}
+      {/* Logo-Bereich der Sidebar. */}
+      <div className="p-6 border-b border-slate-200 dark:border-sidebar-border"> {/* Logo-Bereich */}
+        <div className="flex items-center space-x-3"> {/* Logo und Titel */}
+          {/* Logo-Icon. */}
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"> {/* Logo-Icon Container */}
+            <Network className="text-white h-4 w-4" /> {/* Netzwerk-Icon */}
           </div>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-sidebar-foreground">NetzMonitor</h1>
+          {/* Anwendungsname. */}
+          <h1 className="text-xl font-bold text-slate-800 dark:text-sidebar-foreground">NetzMonitor</h1> {/* Anwendungsname */}
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navigation.map((item) => {
-            const isActive = location === item.href || (item.href === "/" && location === "/");
+      {/* Navigationsbereich. */}
+      <nav className="flex-1 p-4"> {/* Navigationsbereich */}
+        <ul className="space-y-2"> {/* Liste der Navigationspunkte */}
+          {/* Rendert jeden Navigationspunkt. */}
+          {navigation.map((item) => { // Iteriert über Navigationspunkte
+            // Bestimmt, ob der aktuelle Navigationspunkt aktiv ist.
+            const isActive = location === item.href || (item.href === "/" && location === "/"); // Überprüft, ob der Link aktiv ist
+            // Holt das Icon für den Navigationspunkt.
             const Icon = item.icon;
             
             return (
-              <li key={item.name}>
-                <Link href={item.href}>
+              <li key={item.name}> {/* Listenelement für jeden Navigationspunkt */}
+                {/* Link-Komponente für die Navigation. */}
+                <Link to={item.href}> {/* Verwendet 'to' statt 'href' für react-router-dom Link */}
+                  {/* Styling für den Navigationspunkt, abhängig davon, ob er aktiv ist. */}
                   <div
                     className={cn(
                       "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
@@ -65,15 +79,17 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-slate-200 dark:border-sidebar-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center">
-            <User className="text-slate-600 dark:text-slate-300 h-4 w-4" />
+      {/* Benutzerprofil-Bereich. */}
+      <div className="p-4 border-t border-slate-200 dark:border-sidebar-border"> {/* Benutzerprofil-Bereich */}
+        <div className="flex items-center space-x-3"> {/* Benutzerinformationen */}
+          {/* Benutzer-Avatar oder Platzhalter. */}
+          <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center"> {/* Avatar-Platzhalter */}
+            <User className="text-slate-600 dark:text-slate-300 h-4 w-4" /> {/* Benutzer-Icon */}
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-slate-800 dark:text-sidebar-foreground">Admin User</p>
-            <p className="text-xs text-slate-500 dark:text-muted-foreground">Administrator</p>
+          {/* Benutzerinformationen. */}
+          <div className="flex-1"> {/* Textinformationen des Benutzers */}
+            <p className="text-sm font-medium text-slate-800 dark:text-sidebar-foreground">Admin User</p> {/* Benutzername */}
+            <p className="text-xs text-slate-500 dark:text-muted-foreground">Administrator</p> {/* Benutzerrolle */}
           </div>
         </div>
       </div>

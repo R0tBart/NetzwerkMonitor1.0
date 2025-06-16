@@ -1,10 +1,17 @@
 "use client"
 
+// Importiert React für die Komponentendefinition.
 import * as React from "react"
+// Importiert alle Komponenten von `@radix-ui/react-progress` als `ProgressPrimitive`.
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 
+// Importiert die `cn`-Hilfsfunktion zum Zusammenführen von Klassennamen.
 import { cn } from "@/lib/utils"
 
+// Definiert die `Progress`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert einen Fortschrittsbalken.
+// `className`: Zusätzliche CSS-Klassen.
+// `value`: Der aktuelle Wert des Fortschritts (0-100).
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
@@ -23,6 +30,8 @@ const Progress = React.forwardRef<
     />
   </ProgressPrimitive.Root>
 ))
+// Setzt den Anzeigenamen für die `Progress`-Komponente.
 Progress.displayName = ProgressPrimitive.Root.displayName
 
+// Exportiert die `Progress`-Komponente.
 export { Progress }

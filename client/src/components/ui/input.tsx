@@ -1,8 +1,14 @@
+// Importiert React für die Komponentendefinition.
 import * as React from "react"
 
+// Importiert die `cn`-Hilfsfunktion zum Zusammenführen von Klassennamen.
 import { cn } from "@/lib/utils"
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+// Definiert die `Input`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert ein HTML `<input>` Element.
+// `className`: Zusätzliche CSS-Klassen.
+// `type`: Der Typ des Input-Feldes (z.B. "text", "email", "password").
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input"> | React.ComponentPropsWithoutRef<"input">>(
   ({ className, type, ...props }, ref) => {
     return (
       <input
@@ -17,6 +23,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     )
   }
 )
+// Setzt den Anzeigenamen für die `Input`-Komponente.
 Input.displayName = "Input"
 
+// Exportiert die `Input`-Komponente.
 export { Input }
