@@ -27,12 +27,11 @@ function MenubarGroup({
 }
 
 // Definiert die `MenubarPortal`-Komponente.
-// Diese Komponente rendert den Inhalt des Menüs außerhalb des DOM-Baums.
-function MenubarPortal({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Portal>) {
-  return <MenubarPrimitive.Portal {...props} />
-}
+ // Diese Komponente rendert den Inhalt des Menüs außerhalb des DOM-Baums.
+const MenubarPortal = ({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Portal>) => (
+  <MenubarPrimitive.Portal {...props} />
+);
+MenubarPortal.displayName = MenubarPrimitive.Portal.displayName;
 
 // Definiert die `MenubarRadioGroup`-Komponente.
 // Diese Komponente gruppiert Radio-Menüelemente.
@@ -43,12 +42,11 @@ function MenubarRadioGroup({
 }
 
 // Definiert die `MenubarSub`-Komponente.
-// Diese Komponente ist ein Wrapper für ein Untermenü.
-function MenubarSub({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Sub>) {
-  return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />
-}
+// Diese Komponente ist ein Container für ein Untermenü.
+const MenubarSub = ({ ...props }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Sub>) => (
+  <MenubarPrimitive.Sub {...props} />
+);
+MenubarSub.displayName = MenubarPrimitive.Sub.displayName;
 
 // Definiert die `Menubar`-Komponente.
 // Diese Komponente ist ein `React.forwardRef` und rendert die Menüleiste.
@@ -89,35 +87,24 @@ const MenubarTrigger = React.forwardRef<
 MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName
 
 // Definiert die `MenubarSubTrigger`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert den Trigger für ein Untermenü.
-// `className`: Zusätzliche CSS-Klassen.
-// `inset`: Wenn `true`, wird ein Einzug hinzugefügt.
-// `children`: Die Kind-Elemente, die gerendert werden sollen.
+// Diese Komponente ist der Auslöser für ein Untermenü.
 const MenubarSubTrigger = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & {
-    inset?: boolean
-  }
->(({ className, inset, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger>
+>(({ className, ...props }, ref) => (
   <MenubarPrimitive.SubTrigger
     ref={ref}
     className={cn(
       "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-      inset && "pl-8",
       className
     )}
     {...props}
-  >
-    {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
-  </MenubarPrimitive.SubTrigger>
-))
-// Setzt den Anzeigenamen für die `MenubarSubTrigger`-Komponente.
-MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
+  />
+));
+MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
 
 // Definiert die `MenubarSubContent`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert den Inhalt eines Untermenüs.
-// `className`: Zusätzliche CSS-Klassen.
+// Diese Komponente ist der Inhalt eines Untermenüs.
 const MenubarSubContent = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubContent>
@@ -125,51 +112,38 @@ const MenubarSubContent = React.forwardRef<
   <MenubarPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-menubar-content-transform-origin]",
+      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     )}
     {...props}
   />
-))
-// Setzt den Anzeigenamen für die `MenubarSubContent`-Komponente.
-MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName
+));
+MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName;
 
 // Definiert die `MenubarContent`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert den Inhalt des Menüs.
-// `className`: Zusätzliche CSS-Klassen.
-// `align`: Ausrichtung des Inhalts (Standard: "start").
-// `alignOffset`: Versatz der Ausrichtung (Standard: -4).
-// `sideOffset`: Abstand zur Seite (Standard: 8).
+// Diese Komponente ist der Inhalt eines Menüs.
 const MenubarContent = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Content>
->(
-  (
-    { className, align = "start", alignOffset = -4, sideOffset = 8, ...props },
-    ref
-  ) => (
-    <MenubarPrimitive.Portal>
-      <MenubarPrimitive.Content
-        ref={ref}
-        align={align}
-        alignOffset={alignOffset}
-        sideOffset={sideOffset}
-        className={cn(
-          "z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-menubar-content-transform-origin]",
-          className
-        )}
-        {...props}
-      />
-    </MenubarPrimitive.Portal>
-  )
-)
-// Setzt den Anzeigenamen für die `MenubarContent`-Komponente.
-MenubarContent.displayName = MenubarPrimitive.Content.displayName
+>(({ className, align = "start", alignOffset = -4, sideOffset = 8, ...props }, ref) => (
+  <MenubarPrimitive.Portal>
+    <MenubarPrimitive.Content
+      ref={ref}
+      align={align}
+      alignOffset={alignOffset}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className
+      )}
+      {...props}
+    />
+  </MenubarPrimitive.Portal>
+));
+MenubarContent.displayName = MenubarPrimitive.Content.displayName;
 
 // Definiert die `MenubarItem`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert ein Menüelement.
-// `className`: Zusätzliche CSS-Klassen.
-// `inset`: Wenn `true`, wird ein Einzug hinzugefügt.
+// Diese Komponente ist ein einzelnes Element in einem Menü.
 const MenubarItem = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & {
@@ -185,16 +159,18 @@ const MenubarItem = React.forwardRef<
     )}
     {...props}
   />
-))
-// Setzt den Anzeigenamen für die `MenubarItem`-Komponente.
-MenubarItem.displayName = MenubarPrimitive.Item.displayName
-
+));
+MenubarItem.displayName = MenubarPrimitive.Item.displayName;
 
 // Definiert die `MenubarCheckboxItem`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert ein Menüelement mit Checkbox.
+// Diese Komponente ist ein `React.forwardRef` und rendert ein Menüelement mit einer Checkbox.
 // `className`: Zusätzliche CSS-Klassen.
 // `children`: Die Kind-Elemente, die gerendert werden sollen.
-// `checked`: Der Checked-Status der Checkbox.
+// Definiert die `MenubarCheckboxItem`-Komponente.
+// Diese Komponente ist ein `React.forwardRef` und rendert ein Menüelement mit einer Checkbox.
+// `className`: Zusätzliche CSS-Klassen.
+// `children`: Die Kind-Elemente, die gerendert werden sollen.
+// `checked`: Der Status der Checkbox (ausgewählt oder nicht).
 const MenubarCheckboxItem = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem>
@@ -209,15 +185,16 @@ const MenubarCheckboxItem = React.forwardRef<
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      {/* Zeigt das Häkchen an, wenn das Element ausgewählt ist. */}
       <MenubarPrimitive.ItemIndicator>
         <Check className="h-4 w-4" />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
   </MenubarPrimitive.CheckboxItem>
-))
+));
 // Setzt den Anzeigenamen für die `MenubarCheckboxItem`-Komponente.
-MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName
+MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName;
 
 // Definiert die `MenubarRadioItem`-Komponente.
 // Diese Komponente ist ein `React.forwardRef` und rendert ein Menüelement mit Radio-Button.
@@ -242,14 +219,19 @@ const MenubarRadioItem = React.forwardRef<
     </span>
     {children}
   </MenubarPrimitive.RadioItem>
-))
+));
 // Setzt den Anzeigenamen für die `MenubarRadioItem`-Komponente.
-MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName
+MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName;
 
-// Definiert die `MenubarLabel`-Komponente.
-// Diese Komponente ist ein `React.forwardRef` und rendert ein Label für Menüelemente.
-// `className`: Zusätzliche CSS-Klassen.
-// `inset`: Wenn `true`, wird ein Einzug hinzugefügt.
+
+
+
+
+
+
+
+ // Definiert die `MenubarLabel`-Komponente.
+ // Diese Komponente ist ein Label für Menüelemente.
 const MenubarLabel = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & {
@@ -265,25 +247,30 @@ const MenubarLabel = React.forwardRef<
     )}
     {...props}
   />
-))
+));
+MenubarLabel.displayName = MenubarPrimitive.Label.displayName;
 // Setzt den Anzeigenamen für die `MenubarLabel`-Komponente.
 MenubarLabel.displayName = MenubarPrimitive.Label.displayName
 
 // Definiert die `MenubarSeparator`-Komponente.
 // Diese Komponente ist ein `React.forwardRef` und rendert einen Separator im Menü.
 // `className`: Zusätzliche CSS-Klassen.
+// Definiert die `MenubarSeparator`-Komponente.
+// Diese Komponente ist ein Separator im Menü.
 const MenubarSeparator = React.forwardRef<
   React.ElementRef<typeof MenubarPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator>
 >(({ className, ...props }, ref) => (
   <MenubarPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn(
+      "-mx-1 my-1 h-px bg-muted",
+      className
+    )}
     {...props}
   />
-))
-// Setzt den Anzeigenamen für die `MenubarSeparator`-Komponente.
-MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName
+));
+MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
 
 // Definiert die `MenubarShortcut`-Komponente.
 // Diese Komponente rendert einen Shortcut-Text neben einem Menüelement.

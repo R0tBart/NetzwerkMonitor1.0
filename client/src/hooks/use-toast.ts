@@ -9,7 +9,7 @@ import type {
 
 // Definiert die maximale Anzahl der gleichzeitig angezeigten Toasts.
 const TOAST_LIMIT = 1
-// Definiert die Verzögerung, nach der ein Toast entfernt wird (hier sehr hoch, um manuelles Schließen zu ermöglichen).
+// Definiert die Verzögerung, nach der ein Toast entfernt wird. Ein hoher Wert ermöglicht manuelles Schließen.
 const TOAST_REMOVE_DELAY = 1000000
 
 // Typdefinition für einen ToasterToast, der die Basis-ToastProps erweitert.
@@ -32,6 +32,7 @@ const actionTypes = {
 let count = 0
 
 // Funktion zur Generierung einer eindeutigen ID für jeden Toast.
+// Die ID wird inkrementiert und stellt sicher, dass jeder Toast eine einzigartige Kennung hat.
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
@@ -65,6 +66,7 @@ interface State {
 }
 
 // Eine Map, um Timeouts für das automatische Entfernen von Toasts zu speichern.
+// Dies verhindert, dass Toasts zu früh entfernt werden, wenn sie aktualisiert oder manuell geschlossen werden.
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 // Fügt einen Toast zur Entfernungs-Warteschlange hinzu.
@@ -125,6 +127,8 @@ export const reducer = (state: State, action: Action): State => {
           t.id === toastId || toastId === undefined
             ? {
                 ...t,
+                // Setzt den `open`-Status des Toasts auf `false`, um ihn visuell auszublenden.
+                // Der Toast wird später durch die `REMOVE_TOAST`-Aktion vollständig entfernt.
                 open: false,
               }
             : t
@@ -192,8 +196,8 @@ function toast({ ...props }: Toast) {
 
   return {
     id: id,
-    dismiss,
-    update,
+    dismiss, // Funktion zum manuellen Ausblenden des Toasts.
+    update, // Funktion zum Aktualisieren des Toasts nach seiner Erstellung.
   }
 }
 
@@ -211,7 +215,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state]) // Abhängigkeit von `state` kann hier zu unnötigen Rerendern führen, `[]` wäre oft besser.
+  }, []) // Das leere Abhängigkeitsarray stellt sicher, dass der Effekt nur einmal beim Mounten ausgeführt wird.
 
   return {
     ...state,
