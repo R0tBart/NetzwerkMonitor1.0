@@ -61,7 +61,7 @@ export default function Passwords() {
   const entryForm = useForm<FormData>({
     resolver: zodResolver(passwordEntrySchema),
     defaultValues: {
-      vaultId: selectedVault || 1,
+      vaultId: selectedVault ?? undefined,
       title: "",
       username: "",
       email: "",
@@ -70,6 +70,15 @@ export default function Passwords() {
       notes: "",
       category: "",
       isFavorite: false,
+    }, 
+  });
+
+  const deleteVaultMutation = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/password-vaults/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/password-vaults"] });
+      toast({ title: "Tresor gelöscht", description: "Der Passwort-Tresor wurde erfolgreich gelöscht." });
+      setSelectedVault(null); // Clear selected vault after deletion
     },
   });
 
@@ -124,19 +133,22 @@ export default function Passwords() {
   });
 
   const onSubmitEntry = (data: FormData) => {
-    const entryData = {
-      ...data,
-      vaultId: selectedVault || (vaults[0]?.id) || 1
-    };
+    // vaultId is already part of data from the form
     if (editingEntry) {
-      updateEntryMutation.mutate({ id: editingEntry.id, data: entryData });
+      updateEntryMutation.mutate({ id: editingEntry.id, data });
     } else {
-      createEntryMutation.mutate(entryData);
+      createEntryMutation.mutate(data);
     }
   };
 
   const onSubmitVault = (data: VaultFormData) => {
     createVaultMutation.mutate(data);
+  };
+
+  const handleDeleteVault = (vaultId: number) => {
+    if (window.confirm("Sind Sie sicher, dass Sie diesen Tresor löschen möchten? Alle darin enthaltenen Passwörter werden ebenfalls gelöscht.")) {
+      deleteVaultMutation.mutate(vaultId);
+    }
   };
 
   const togglePasswordVisibility = (entryId: number) => {
@@ -155,7 +167,7 @@ export default function Passwords() {
   const handleGeneratePassword = () => {
     const newPassword = generatePassword(16);
     entryForm.setValue("encryptedPassword", newPassword);
-    toast({ title: "Passwort generiert", description: "Ein starkes Passwort wurde generiert." });
+    toast({ title: "Passwort generiert", description: `Ein starkes Passwort wurde generiert: ${newPassword}` });
   };
 
   const copyToClipboard = async (text: string, type: string) => {
@@ -364,16 +376,33 @@ export default function Passwords() {
                             <FormLabel>Passwort *</FormLabel>
                             <div className="flex gap-2">
                               <FormControl>
-                                <Input type="password" placeholder="Sicheres Passwort" {...field} />
+                      <Input type={showPassword[0] ? "text" : "password"} {...field} />
                               </FormControl>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleGeneratePassword}
-                                className="px-3"
-                              >
-                                Generieren
-                              </Button>
+                <div className="flex items-center space-x-2">
+                  <Button type="button" onClick={handleGeneratePassword}>
+                    Passwort generieren
+                  </Button>
+                  <FormField
+                    control={entryForm.control}
+                    name="encryptedPassword"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Passwort anzeigen</FormLabel>
+                          <FormDescription>
+                            Zeigt das generierte Passwort im Eingabefeld an.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={showPassword[0] || false} // Use a dummy ID like 0 for generated password visibility
+                            onCheckedChange={() => togglePasswordVisibility(0)}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -448,13 +477,15 @@ export default function Passwords() {
             {/* Vault Selector */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Tresore
-                </CardTitle>
-                <CardDescription>
-                  Wählen Sie einen Tresor aus
-                </CardDescription>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold">Passwort-Tresore</CardTitle>
+            {selectedVault && (
+              <Button variant="destructive" size="sm" onClick={() => handleDeleteVault(selectedVault)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Tresor löschen
+              </Button>
+            )}
+          </div>
+          <CardDescription>Verwalten Sie Ihre Passwort-Tresore.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {vaultsLoading ? (

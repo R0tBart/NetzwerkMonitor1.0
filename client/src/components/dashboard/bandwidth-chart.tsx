@@ -12,15 +12,31 @@ export default function BandwidthChart() {
   const [timeRange, setTimeRange] = useState("24h");
 
   const { data: metrics, isLoading } = useQuery<BandwidthMetric[]>({
-    queryKey: ["/api/bandwidth-metrics", { limit: 24 }],
+    queryKey: ["/api/bandwidth-metrics", { timeRange }],
     refetchInterval: 10000, // Refresh every 10 seconds
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (timeRange === "24h") {
+        params.append("limit", "24");
+      } else if (timeRange === "7d") {
+        params.append("days", "7");
+      } else if (timeRange === "30d") {
+        params.append("days", "30");
+      }
+      return apiRequest("GET", `/api/bandwidth-metrics?${params.toString()}`);
+    },
   });
 
   const chartData = {
-    labels: metrics?.map(m => new Date(m.timestamp).toLocaleTimeString('de-DE', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })).reverse() || [],
+    labels: metrics?.map(m => {
+      const date = new Date(m.timestamp);
+      if (timeRange === "24h") {
+        return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      } else if (timeRange === "7d" || timeRange === "30d") {
+        return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+      }
+      return '';
+    }).reverse() || [],
     datasets: [
       {
         label: 'Eingehend (GB/s)',
