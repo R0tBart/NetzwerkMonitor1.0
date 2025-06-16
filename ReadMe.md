@@ -131,3 +131,5 @@ MIT
 ---
 
 **Viel Spaß mit NetzwerkMonitor 1.0!**
+
+Das ist ein Testeintrag
