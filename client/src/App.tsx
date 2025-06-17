@@ -63,6 +63,12 @@ function App() {
           <Router />
         </TooltipProvider>
       </QueryClientProvider>
+      <footer className="bg-white dark:bg-card shadow-sm border-t border-slate-200 dark:border-border p-4 text-center text-sm text-slate-600 dark:text-muted-foreground">
+        © {new Date().getFullYear()} Netzwerk Monitor. All rights reserved.
+        <a href="https://github.com/R0tBart/NetzwerkMonitor1.0" title="View source code on GitHub">
+        
+        </a>
+  </footer>
     </ThemeProvider>
   );
 }
