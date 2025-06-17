@@ -38,11 +38,9 @@ export default function Sidebar() {
       <div className="p-6 border-b border-slate-200 dark:border-sidebar-border"> {/* Logo-Bereich */}
         <div className="flex items-center space-x-3"> {/* Logo und Titel */}
           {/* Logo-Icon. */}
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"> {/* Logo-Icon Container */}
-            <Network className="text-white h-4 w-4" /> {/* Netzwerk-Icon */}
+          <div> 
+            <img src="/image/layer8.png" alt="Logo" className="h-full w-full object-contain" />
           </div>
-          {/* Anwendungsname. */}
-          <h1 className="text-xl font-bold text-slate-800 dark:text-sidebar-foreground">NetzMonitor</h1> {/* Anwendungsname */}
         </div>
       </div>
 
