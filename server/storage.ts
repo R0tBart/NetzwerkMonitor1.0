@@ -1,7 +1,12 @@
 import { devices, bandwidthMetrics, systemMetrics, securityEvents, idsRules, passwordVaults, passwordEntries, type Device, type InsertDevice, type BandwidthMetric, type InsertBandwidthMetric, type SystemMetric, type InsertSystemMetric, type SecurityEvent, type InsertSecurityEvent, type IdsRule, type InsertIdsRule, type PasswordVault, type InsertPasswordVault, type PasswordEntry, type InsertPasswordEntry } from "@shared/schema";
+// Importiert die Datenbankinstanz.
 import { db } from "./db";
+// Importiert 'eq' für Gleichheitsabfragen und 'desc' für absteigende Sortierung von Drizzle ORM.
 import { eq, desc } from "drizzle-orm";
 
+/**
+ * Definiert das Interface für die Speicherschicht, die alle Datenzugriffsmethoden bereitstellt.
+ */
 export interface IStorage {
   // Device operations
   getDevices(): Promise<Device[]>;
@@ -47,6 +52,10 @@ export interface IStorage {
   deletePasswordEntry(id: number): Promise<boolean>;
 }
 
+/**
+ * Implementierung des Speichers, der alle Daten im Arbeitsspeicher (Maps) hält.
+ * Diese Klasse dient zu Demonstrations- und Testzwecken und speichert keine Daten persistent.
+ */
 export class MemStorage implements IStorage {
   private devices: Map<number, Device>;
   private bandwidthMetrics: Map<number, BandwidthMetric>;
@@ -63,7 +72,12 @@ export class MemStorage implements IStorage {
   private currentPasswordVaultId: number;
   private currentPasswordEntryId: number;
 
+  /**
+   * Konstruktor für MemStorage.
+   * Initialisiert alle Maps und Zähler für die IDs und lädt Beispieldaten.
+   */
   constructor() {
+    // Initialisiert Maps zum Speichern von Daten im Arbeitsspeicher.
     this.devices = new Map();
     this.bandwidthMetrics = new Map();
     this.systemMetrics = new Map();
@@ -71,6 +85,7 @@ export class MemStorage implements IStorage {
     this.idsRules = new Map();
     this.passwordVaults = new Map();
     this.passwordEntries = new Map();
+    // Initialisiert Zähler für eindeutige IDs.
     this.currentDeviceId = 1;
     this.currentBandwidthMetricId = 1;
     this.currentSystemMetricId = 1;
@@ -79,47 +94,180 @@ export class MemStorage implements IStorage {
     this.currentPasswordVaultId = 1;
     this.currentPasswordEntryId = 1;
     
-    // Initialize with sample data
+    // Initialisiert mit Beispieldaten.
     this.initializeSampleData();
   }
+  /**
+   * Ruft alle Passwort-Tresore ab.
+   * @returns Ein Promise, das ein Array aller Passwort-Tresore zurückgibt.
+   */
   async getPasswordVaults(): Promise<PasswordVault[]> {
-    // In-memory: just return all vaults (if implemented)
+    // Im Speicher: Gibt einfach alle vorhandenen Tresore zurück.
     return Array.from(this.passwordVaults.values());
   }
 
+  /**
+   * Ruft einen einzelnen Passwort-Tresor anhand seiner ID ab.
+   * @param id Die ID des abzurufenden Passwort-Tresors.
+   * @returns Ein Promise, das den gefundenen Passwort-Tresor oder undefined zurückgibt.
+   */
   async getPasswordVault(id: number): Promise<PasswordVault | undefined> {
+    // Stellt sicher, dass die Map initialisiert ist.
     if (!this["passwordVaults"]) {
       this["passwordVaults"] = new Map<number, PasswordVault>();
     }
     return this["passwordVaults"].get(id);
   }
+  /**
+   * Erstellt einen neuen Passwort-Tresor.
+   * @param vault Die Daten des zu erstellenden Passwort-Tresors.
+   * @returns Ein Promise, das den erstellten Passwort-Tresor zurückgibt.
+   */
   createPasswordVault(vault: InsertPasswordVault): Promise<PasswordVault> {
-    throw new Error("Method not implemented.");
-  }
-  updatePasswordVault(id: number, vault: Partial<InsertPasswordVault>): Promise<PasswordVault | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  deletePasswordVault(id: number): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  getPasswordEntries(vaultId?: number): Promise<PasswordEntry[]> {
-    throw new Error("Method not implemented.");
-  }
-  getPasswordEntry(id: number): Promise<PasswordEntry | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  createPasswordEntry(entry: InsertPasswordEntry): Promise<PasswordEntry> {
-    throw new Error("Method not implemented.");
-  }
-  updatePasswordEntry(id: number, entry: Partial<InsertPasswordEntry>): Promise<PasswordEntry | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  deletePasswordEntry(id: number): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    const newVault = {
+      id: this.currentPasswordVaultId++,
+      ...vault,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.passwordVaults.set(newVault.id, {
+      id: newVault.id,
+      name: newVault.name,
+      description: newVault.description ?? null,
+      createdAt: newVault.createdAt,
+      updatedAt: newVault.updatedAt
+    });
+    return Promise.resolve({
+      id: newVault.id,
+      name: newVault.name,
+      description: newVault.description ?? null,
+      createdAt: newVault.createdAt,
+      updatedAt: newVault.updatedAt
+    });
   }
 
+  /**
+   * Aktualisiert einen bestehenden Passwort-Tresor.
+   * @param id Die ID des zu aktualisierenden Passwort-Tresors.
+   * @param vault Die zu aktualisierenden Daten des Passwort-Tresors.
+   * @returns Ein Promise, das den aktualisierten Passwort-Tresor oder undefined zurückgibt, falls nicht gefunden.
+   */
+  updatePasswordVault(id: number, vault: Partial<InsertPasswordVault>): Promise<PasswordVault | undefined> {
+    const existingVault = this.passwordVaults.get(id);
+    if (!existingVault) {
+      return Promise.resolve(undefined);
+    }
+    const updatedVault = { ...existingVault, ...vault, updatedAt: new Date() };
+    this.passwordVaults.set(id, updatedVault);
+    return Promise.resolve(updatedVault);
+  }
+
+  /**
+   * Löscht einen Passwort-Tresor anhand seiner ID.
+   * @param id Die ID des zu löschenden Passwort-Tresors.
+   * @returns Ein Promise, das true zurückgibt, wenn der Tresor gelöscht wurde, sonst false.
+   */
+  deletePasswordVault(id: number): Promise<boolean> {
+    return Promise.resolve(this.passwordVaults.delete(id));
+  }
+
+  /**
+   * Ruft alle Passworteinträge ab, optional gefiltert nach Tresor-ID.
+   * @param vaultId Optional: Die ID des Tresors, dessen Einträge abgerufen werden sollen.
+   * @returns Ein Promise, das ein Array von Passworteinträgen zurückgibt.
+   */
+  getPasswordEntries(vaultId?: number): Promise<PasswordEntry[]> {
+    let entries = Array.from(this.passwordEntries.values());
+    if (vaultId) {
+      entries = entries.filter(entry => entry.vaultId === vaultId);
+    }
+    return Promise.resolve(entries);
+  }
+
+  /**
+   * Ruft einen einzelnen Passworteintrag anhand seiner ID ab.
+   * @param id Die ID des abzurufenden Passworteintrags.
+   * @returns Ein Promise, das den gefundenen Passworteintrag oder undefined zurückgibt.
+   */
+  getPasswordEntry(id: number): Promise<PasswordEntry | undefined> {
+    return Promise.resolve(this.passwordEntries.get(id));
+  }
+
+  /**
+   * Erstellt einen neuen Passworteintrag.
+   * @param entry Die Daten des zu erstellenden Passworteintrags.
+   * @returns Ein Promise, das den erstellten Passworteintrag zurückgibt.
+   */
+  createPasswordEntry(entry: InsertPasswordEntry): Promise<PasswordEntry> {
+    const newEntry = {
+      id: this.currentPasswordEntryId++,
+      ...entry,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastUsed: null, // Set to null initially
+    };
+    this.passwordEntries.set(newEntry.id, {
+      id: newEntry.id,
+      createdAt: newEntry.createdAt,
+      updatedAt: newEntry.updatedAt,
+      vaultId: newEntry.vaultId,
+      title: newEntry.title,
+      username: newEntry.username ?? null,
+      email: newEntry.email ?? null,
+      encryptedPassword: newEntry.encryptedPassword,
+      website: newEntry.website ?? null,
+      notes: newEntry.notes ?? null,
+      category: newEntry.category ?? null,
+      isFavorite: newEntry.isFavorite ?? false,
+      lastUsed: newEntry.lastUsed
+    });
+    return Promise.resolve({
+      id: newEntry.id,
+      createdAt: newEntry.createdAt,
+      updatedAt: newEntry.updatedAt,
+      vaultId: newEntry.vaultId,
+      title: newEntry.title,
+      username: newEntry.username ?? null,
+      email: newEntry.email ?? null,
+      encryptedPassword: newEntry.encryptedPassword,
+      website: newEntry.website ?? null,
+      notes: newEntry.notes ?? null,
+      category: newEntry.category ?? null,
+      isFavorite: newEntry.isFavorite ?? false,
+      lastUsed: newEntry.lastUsed
+    });
+  }
+
+  /**
+   * Aktualisiert einen bestehenden Passworteintrag.
+   * @param id Die ID des zu aktualisierenden Passworteintrags.
+   * @param entry Die zu aktualisierenden Daten des Passworteintrags.
+   * @returns Ein Promise, das den aktualisierten Passworteintrag oder undefined zurückgibt, falls nicht gefunden.
+   */
+  updatePasswordEntry(id: number, entry: Partial<InsertPasswordEntry>): Promise<PasswordEntry | undefined> {
+    const existingEntry = this.passwordEntries.get(id);
+    if (!existingEntry) {
+      return Promise.resolve(undefined);
+    }
+    const updatedEntry = { ...existingEntry, ...entry, updatedAt: new Date() };
+    this.passwordEntries.set(id, updatedEntry);
+    return Promise.resolve(updatedEntry);
+  }
+
+  /**
+   * Löscht einen Passworteintrag anhand seiner ID.
+   * @param id Die ID des zu löschenden Passworteintrags.
+   * @returns Ein Promise, das true zurückgibt, wenn der Eintrag gelöscht wurde, sonst false.
+   */
+  deletePasswordEntry(id: number): Promise<boolean> {
+    return Promise.resolve(this.passwordEntries.delete(id));
+  }
+
+  /**
+   * Initialisiert die Speicherschicht mit Beispieldaten für Geräte, Systemmetriken und IDS-Regeln.
+   */
   private initializeSampleData() {
-    // Create sample devices
+    // Erstellt Beispieldaten für Geräte.
     const sampleDevices: InsertDevice[] = [
       {
         name: "Core Router R1",
@@ -163,6 +311,7 @@ export class MemStorage implements IStorage {
       },
     ];
 
+    // Fügt die Beispieldaten der Geräte-Map hinzu.
     sampleDevices.forEach(device => {
       const id = this.currentDeviceId++;
       const fullDevice: Device = {
@@ -180,7 +329,7 @@ export class MemStorage implements IStorage {
       this.devices.set(id, fullDevice);
     });
 
-    // Create initial system metrics
+    // Erstellt anfängliche Systemmetriken.
     const initialMetrics: InsertSystemMetric = {
       activeDevices: 127,
       totalBandwidth: 2.4,
@@ -188,6 +337,7 @@ export class MemStorage implements IStorage {
       uptime: 99.9,
     };
     
+    // Erstellt ein Systemmetrik-Objekt und fügt es der Map hinzu.
     const systemMetric: SystemMetric = {
       ...initialMetrics,
       id: this.currentSystemMetricId++,
@@ -195,7 +345,7 @@ export class MemStorage implements IStorage {
     };
     this.systemMetrics.set(systemMetric.id, systemMetric);
 
-    // Initialize sample IDS rules
+    // Initialisiert Beispieldaten für IDS-Regeln.
     const sampleIdsRules: InsertIdsRule[] = [
       {
         name: "SSH Brute Force Detection",
@@ -227,6 +377,7 @@ export class MemStorage implements IStorage {
       },
     ];
 
+    // Fügt die Beispieldaten der IDS-Regel-Map hinzu.
     sampleIdsRules.forEach(rule => {
       const id = this.currentIdsRuleId++;
       const fullRule: IdsRule = {
@@ -237,6 +388,83 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.idsRules.set(id, fullRule);
+    });
+
+    // Initialisiert Beispieldaten für Passwort-Tresore.
+    const samplePasswordVaults: InsertPasswordVault[] = [
+      {
+        name: "Persönlicher Tresor",
+        description: "Mein persönlicher Passwort-Tresor",
+      },
+      {
+        name: "Arbeitstresor",
+        description: "Passwörter für Arbeitskonten",
+      },
+    ];
+
+    // Fügt die Beispieldaten der Passwort-Tresor-Map hinzu.
+    samplePasswordVaults.forEach(vault => {
+      const id = this.currentPasswordVaultId++;
+      const fullVault: PasswordVault = {
+        id: id,
+// Remove redundant name assignment since it's already included in ...vault spread
+        description: vault.description ?? null,
+        ...vault,
+// Remove duplicate id property since it's already included in the spread operator
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.passwordVaults.set(id, fullVault);
+    });
+
+    // Initialisiert Beispieldaten für Passworteinträge.
+    const samplePasswordEntries: InsertPasswordEntry[] = [
+      {
+        vaultId: 1,
+        title: "Beispiel-Website",
+        username: "user@example.com",
+        encryptedPassword: "securepassword123",
+        website: "https://www.example.com",
+        notes: "Dies ist ein Beispiel-Passworteintrag.",
+      },
+      {
+        vaultId: 1,
+        title: "Online-Banking",
+        username: "banking_user",
+        encryptedPassword: "banksecure!",
+        website: "https://www.mybank.com",
+        notes: "Wichtig: MFA aktiviert.",
+      },
+      {
+        vaultId: 2,
+        title: "Firmen-VPN",
+        username: "vpn_user",
+        encryptedPassword: "corporateVPN#",
+        website: "https://vpn.company.com",
+        notes: "Nur für den internen Gebrauch.",
+      },
+    ];
+
+    // Fügt die Beispieldaten der Passworteintrag-Map hinzu.
+    samplePasswordEntries.forEach(entry => {
+      const id = this.currentPasswordEntryId++;
+      const fullEntry: PasswordEntry = {
+        id: id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+// vaultId is already included in the spread operator below, so this line can be removed
+// Remove redundant title assignment since it's included in the spread operator below
+        username: entry.username ?? null,
+        email: entry.email ?? null,
+// Remove this line since encryptedPassword is already included in the spread operator below
+        website: entry.website ?? null,
+        notes: entry.notes ?? null,
+        category: entry.category ?? null,
+        isFavorite: entry.isFavorite ?? false,
+        lastUsed: null,
+        ...entry,
+      };
+      this.passwordEntries.set(id, fullEntry);
     });
 
     // Initialize sample security events
@@ -279,6 +507,7 @@ export class MemStorage implements IStorage {
       },
     ];
 
+    // Fügt die Beispieldaten der Sicherheitsereignis-Map hinzu.
     sampleSecurityEvents.forEach(event => {
       const id = this.currentSecurityEventId++;
       const fullEvent: SecurityEvent = {
@@ -293,14 +522,28 @@ export class MemStorage implements IStorage {
     });
   }
 
+  /**
+   * Ruft alle Geräte ab.
+   * @returns Ein Promise, das ein Array aller Geräte zurückgibt.
+   */
   async getDevices(): Promise<Device[]> {
     return Array.from(this.devices.values());
   }
 
+  /**
+   * Ruft ein einzelnes Gerät anhand seiner ID ab.
+   * @param id Die ID des abzurufenden Geräts.
+   * @returns Ein Promise, das das gefundene Gerät oder undefined zurückgibt.
+   */
   async getDevice(id: number): Promise<Device | undefined> {
     return this.devices.get(id);
   }
 
+  /**
+   * Erstellt ein neues Gerät.
+   * @param insertDevice Die Daten des zu erstellenden Geräts.
+   * @returns Ein Promise, das das erstellte Gerät zurückgibt.
+   */
   async createDevice(insertDevice: InsertDevice): Promise<Device> {
     const id = this.currentDeviceId++;
     const device: Device = {
@@ -317,6 +560,12 @@ export class MemStorage implements IStorage {
     return device;
   }
 
+  /**
+   * Aktualisiert ein bestehendes Gerät.
+   * @param id Die ID des zu aktualisierenden Geräts.
+   * @param updates Die zu aktualisierenden Daten des Geräts.
+   * @returns Ein Promise, das das aktualisierte Gerät oder undefined zurückgibt, falls nicht gefunden.
+   */
   async updateDevice(id: number, updates: Partial<InsertDevice>): Promise<Device | undefined> {
     const device = this.devices.get(id);
     if (!device) return undefined;
@@ -330,10 +579,21 @@ export class MemStorage implements IStorage {
     return updatedDevice;
   }
 
+  /**
+   * Löscht ein Gerät anhand seiner ID.
+   * @param id Die ID des zu löschenden Geräts.
+   * @returns Ein Promise, das true zurückgibt, wenn das Gerät gelöscht wurde, sonst false.
+   */
   async deleteDevice(id: number): Promise<boolean> {
     return this.devices.delete(id);
   }
 
+  /**
+   * Ruft Bandbreitenmetriken ab, optional gefiltert nach Geräte-ID und begrenzt durch ein Limit.
+   * @param deviceId Optional: Die ID des Geräts, dessen Metriken abgerufen werden sollen.
+   * @param limit Optional: Die maximale Anzahl der zurückzugebenden Metriken. Standard ist 50.
+   * @returns Ein Promise, das ein Array von Bandbreitenmetriken zurückgibt.
+   */
   async getBandwidthMetrics(deviceId?: number, limit: number = 50): Promise<BandwidthMetric[]> {
     let metrics = Array.from(this.bandwidthMetrics.values());
     
@@ -346,6 +606,11 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
+  /**
+   * Erstellt eine neue Bandbreitenmetrik.
+   * @param insertMetric Die Daten der zu erstellenden Bandbreitenmetrik.
+   * @returns Ein Promise, das die erstellte Bandbreitenmetrik zurückgibt.
+   */
   async createBandwidthMetric(insertMetric: InsertBandwidthMetric): Promise<BandwidthMetric> {
     const id = this.currentBandwidthMetricId++;
     const metric: BandwidthMetric = {
@@ -358,11 +623,20 @@ export class MemStorage implements IStorage {
     return metric;
   }
 
+  /**
+   * Ruft die neuesten Systemmetriken ab.
+   * @returns Ein Promise, das die neuesten Systemmetriken oder undefined zurückgibt.
+   */
   async getLatestSystemMetrics(): Promise<SystemMetric | undefined> {
     const metrics = Array.from(this.systemMetrics.values());
     return metrics.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
   }
 
+  /**
+   * Erstellt eine neue Systemmetrik.
+   * @param insertMetric Die Daten der zu erstellenden Systemmetrik.
+   * @returns Ein Promise, das die erstellte Systemmetrik zurückgibt.
+   */
   async createSystemMetric(insertMetric: InsertSystemMetric): Promise<SystemMetric> {
     const id = this.currentSystemMetricId++;
     const metric: SystemMetric = {
@@ -374,19 +648,35 @@ export class MemStorage implements IStorage {
     return metric;
   }
 
+  /**
+   * Ruft den Verlauf der Systemmetriken ab, begrenzt durch ein Limit.
+   * @param limit Optional: Die maximale Anzahl der zurückzugebenden Metriken. Standard ist 24.
+   * @returns Ein Promise, das ein Array von Systemmetriken zurückgibt.
+   */
   async getSystemMetricsHistory(limit: number = 24): Promise<SystemMetric[]> {
     return Array.from(this.systemMetrics.values())
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
   }
 
-  // Security events operations (IDS)
+  // Operationen für Sicherheitsereignisse (IDS)
+  /**
+   * Ruft Sicherheitsereignisse ab, begrenzt durch ein Limit.
+   * @param limit Optional: Die maximale Anzahl der zurückzugebenden Ereignisse. Standard ist 50.
+   * @returns Ein Promise, das ein Array von Sicherheitsereignissen zurückgibt.
+   */
   async getSecurityEvents(limit: number = 50): Promise<SecurityEvent[]> {
     return Array.from(this.securityEvents.values())
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
   }
 
+  /**
+   * Ruft Sicherheitsereignisse nach Status ab, begrenzt durch ein Limit.
+   * @param status Der Status, nach dem gefiltert werden soll (z.B. 'new', 'investigating', 'resolved').
+   * @param limit Optional: Die maximale Anzahl der zurückzugebenden Ereignisse. Standard ist 50.
+   * @returns Ein Promise, das ein Array von Sicherheitsereignissen zurückgibt.
+   */
   async getSecurityEventsByStatus(status: string, limit: number = 50): Promise<SecurityEvent[]> {
     return Array.from(this.securityEvents.values())
       .filter(event => event.status === status)
@@ -394,6 +684,11 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
+  /**
+   * Erstellt ein neues Sicherheitsereignis.
+   * @param insertEvent Die Daten des zu erstellenden Sicherheitsereignisses.
+   * @returns Ein Promise, das das erstellte Sicherheitsereignis zurückgibt.
+   */
   async createSecurityEvent(insertEvent: InsertSecurityEvent): Promise<SecurityEvent> {
     const id = this.currentSecurityEventId++;
     const event: SecurityEvent = {
@@ -408,6 +703,12 @@ export class MemStorage implements IStorage {
     return event;
   }
 
+  /**
+   * Aktualisiert ein bestehendes Sicherheitsereignis.
+   * @param id Die ID des zu aktualisierenden Sicherheitsereignisses.
+   * @param updates Die zu aktualisierenden Daten des Sicherheitsereignisses.
+   * @returns Ein Promise, das das aktualisierte Sicherheitsereignis oder undefined zurückgibt, falls nicht gefunden.
+   */
   async updateSecurityEvent(id: number, updates: Partial<InsertSecurityEvent>): Promise<SecurityEvent | undefined> {
     const event = this.securityEvents.get(id);
     if (!event) return undefined;
@@ -420,19 +721,38 @@ export class MemStorage implements IStorage {
     return updatedEvent;
   }
 
+  /**
+   * Löscht ein Sicherheitsereignis anhand seiner ID.
+   * @param id Die ID des zu löschenden Sicherheitsereignisses.
+   * @returns Ein Promise, das true zurückgibt, wenn das Ereignis gelöscht wurde, sonst false.
+   */
   async deleteSecurityEvent(id: number): Promise<boolean> {
     return this.securityEvents.delete(id);
   }
 
-  // IDS rules operations
+  // Operationen für IDS-Regeln
+  /**
+   * Ruft alle IDS-Regeln ab.
+   * @returns Ein Promise, das ein Array aller IDS-Regeln zurückgibt.
+   */
   async getIdsRules(): Promise<IdsRule[]> {
     return Array.from(this.idsRules.values());
   }
 
+  /**
+   * Ruft eine einzelne IDS-Regel anhand ihrer ID ab.
+   * @param id Die ID der abzurufenden IDS-Regel.
+   * @returns Ein Promise, das die gefundene IDS-Regel oder undefined zurückgibt.
+   */
   async getIdsRule(id: number): Promise<IdsRule | undefined> {
     return this.idsRules.get(id);
   }
 
+  /**
+   * Erstellt eine neue IDS-Regel.
+   * @param insertRule Die Daten der zu erstellenden IDS-Regel.
+   * @returns Ein Promise, das die erstellte IDS-Regel zurückgibt.
+   */
   async createIdsRule(insertRule: InsertIdsRule): Promise<IdsRule> {
     const id = this.currentIdsRuleId++;
     const rule: IdsRule = {
@@ -446,6 +766,12 @@ export class MemStorage implements IStorage {
     return rule;
   }
 
+  /**
+   * Aktualisiert eine bestehende IDS-Regel.
+   * @param id Die ID der zu aktualisierenden IDS-Regel.
+   * @param updates Die zu aktualisierenden Daten der IDS-Regel.
+   * @returns Ein Promise, das die aktualisierte IDS-Regel oder undefined zurückgibt, falls nicht gefunden.
+   */
   async updateIdsRule(id: number, updates: Partial<InsertIdsRule>): Promise<IdsRule | undefined> {
     const rule = this.idsRules.get(id);
     if (!rule) return undefined;
@@ -459,14 +785,27 @@ export class MemStorage implements IStorage {
     return updatedRule;
   }
 
+  /**
+   * Löscht eine IDS-Regel anhand ihrer ID.
+   * @param id Die ID der zu löschenden IDS-Regel.
+   * @returns Ein Promise, das true zurückgibt, wenn die Regel gelöscht wurde, sonst false.
+   */
   async deleteIdsRule(id: number): Promise<boolean> {
     return this.idsRules.delete(id);
   }
 }
 
+/**
+ * Implementierung des Speichers, der Daten in einer relationalen Datenbank (PostgreSQL) über Drizzle ORM hält.
+ * Diese Klasse bietet persistente Speicherung für alle Daten.
+ */
 export class DatabaseStorage implements IStorage {
   private initialized = false;
 
+  /**
+   * Initialisiert die Datenbank mit Beispieldaten, falls noch keine Daten vorhanden sind.
+   * Stellt sicher, dass die Datenbank nur einmal initialisiert wird.
+   */
   private async initializeData() {
     if (this.initialized) return;
     
