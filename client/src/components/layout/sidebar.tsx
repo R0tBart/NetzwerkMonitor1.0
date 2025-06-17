@@ -35,14 +35,11 @@ export default function Sidebar() {
     // Hauptcontainer der Sidebar mit Styling für Breite, Hintergrund, Schatten und Rahmen.
     <div className="w-64 bg-white dark:bg-sidebar shadow-lg border-r border-slate-200 dark:border-sidebar-border flex flex-col"> {/* Sidebar-Container */}
       {/* Logo-Bereich der Sidebar. */}
-      <div className="p-6 border-b border-slate-200 dark:border-sidebar-border"> {/* Logo-Bereich */}
-        <div className="flex items-center space-x-3"> {/* Logo und Titel */}
-          {/* Logo-Icon. */}
-          <div> 
-            <img src="/image/layer8.png" alt="Logo" className="h-full w-full object-contain" />
+      <div className="p-6 border-b border-slate dark:border-sidebar-border"> {/* Logo-Bereich */}
+         <div> 
+            <img src="/image/layer8.png" alt="Logo" className="h-full w-full object-contain" />{/* Logo-Icon. */}
           </div>
-        </div>
-      </div>
+    </div>
 
       {/* Navigationsbereich. */}
       <nav className="flex-1 p-4"> {/* Navigationsbereich */}
