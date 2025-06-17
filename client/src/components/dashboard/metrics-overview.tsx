@@ -54,15 +54,7 @@ export default function MetricsOverview() {
       iconBg: "bg-green-100 dark:bg-green-900",
       iconColor: "text-success",
     },
-    {
-      title: "Warnungen",
-      value: metrics?.warnings?.toString() || "0",
-      change: "Aufmerksamkeit erforderlich",
-      changeType: "warning" as const,
-      icon: AlertTriangle,
-      iconBg: "bg-amber-100 dark:bg-amber-900",
-      iconColor: "text-warning",
-    },
+
     {
       title: "Uptime",
       value: `${metrics?.uptime?.toFixed(1) || "0"}%`,

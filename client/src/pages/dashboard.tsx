@@ -176,7 +176,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             {/* Titel und Beschreibung des Dashboards */}
             <div>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Netzwerk Dashboard</h2>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">NetzwerkMonitor</h2>
               <p className="text-sm text-slate-600 dark:text-muted-foreground mt-1">
                 Echtzeit-Überwachung Ihrer Netzwerkinfrastruktur
               </p>
@@ -197,11 +197,7 @@ export default function Dashboard() {
                 <Download className="h-4 w-4" />
                 <span>Export</span>
               </Button>
-              {/* Live-Statusanzeige */}
-              <div className="flex items-center space-x-2 text-sm">
-                <Circle className="h-2 w-2 bg-success rounded-full animate-pulse-dot fill-current text-success" />
-                <span className="text-slate-600 dark:text-muted-foreground">Live</span>
-              </div>
+
             </div>
           </div>
         </header>

@@ -1,8 +1,14 @@
 import Sidebar from "@/components/layout/sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "../components/theme-provider";
 
 export default function Settings() {
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [darkMode, setDarkMode] = useState(theme === "dark");
+
+  useEffect(() => {
+    setDarkMode(theme === "dark");
+  }, [theme]);
   const [twoFactor, setTwoFactor] = useState(true);
 
   return (
@@ -25,7 +31,10 @@ export default function Settings() {
                 id="darkModeToggle"
                 type="checkbox"
                 checked={darkMode}
-                onChange={e => setDarkMode(e.target.checked)}
+                onChange={e => {
+                  setDarkMode(e.target.checked);
+                  setTheme(e.target.checked ? "dark" : "light");
+                }}
                 className="w-5 h-5 accent-blue-600"
                 title="Dark Mode aktivieren/deaktivieren"
               />

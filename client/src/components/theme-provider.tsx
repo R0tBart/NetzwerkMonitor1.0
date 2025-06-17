@@ -33,6 +33,8 @@ export function ThemeProvider({ // ThemeProvider Komponente
   )
 }
 
+export const useTheme = () => React.useContext(ThemeContext)
+
 const ThemeContext = React.createContext<{ // Erstellt den Theme-Context
   theme: Theme
   setTheme: (theme: Theme) => void

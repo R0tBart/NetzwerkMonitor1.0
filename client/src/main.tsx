@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 // Importiert die Hauptkomponente der Anwendung.
 import App from "./App";
+import { ThemeProvider } from "./components/theme-provider";
 // Importiert die globalen CSS-Stile der Anwendung.
 import "./index.css";
 
@@ -14,7 +15,9 @@ import "./index.css";
 createRoot(document.getElementById("root")!).render(
   // `BrowserRouter` stellt die Routing-Funktionalität für die gesamte Anwendung bereit.
   <BrowserRouter>
-    {/* Die Hauptkomponente `App` wird innerhalb des Routers gerendert. */}
-    <App />
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      {/* Die Hauptkomponente `App` wird innerhalb des Routers gerendert. */}
+      <App />
+    </ThemeProvider>
   </BrowserRouter>
 );
