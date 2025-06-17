@@ -39,7 +39,7 @@ export default function Sidebar() {
         <div className="flex items-center space-x-3"> {/* Logo und Titel */}
           {/* Logo-Icon. */}
           <div> 
-            <img src="/image/layer8.png" alt="Logo" className="h-full w-full object-contain" />
+            <img src="/image/layer8_version2.png" alt="Logo" className="h-full w-full object-contain" />
           </div>
         </div>
       </div>
